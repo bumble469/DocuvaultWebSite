@@ -30,12 +30,12 @@ const Auth = () => {
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }));  // Clear error on input change
+    setErrors(prev => ({ ...prev, [e.target.name]: '' }));  
   };
 
   const clearField = (field) => {
     setFormData(prev => ({ ...prev, [field]: '' }));
-    setErrors(prev => ({ ...prev, [field]: '' })); // Clear error when clearing field
+    setErrors(prev => ({ ...prev, [field]: '' })); 
   };
 
   const validate = () => {
