@@ -2,11 +2,23 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, X } from 'lucide-react';
 import docuvaultimage from '../../assets/images/docuvaultimage.jpg';
 import logoimage from '../../assets/images/logowithtext.png';
-
+import OTPModal from './components/otpmodal';
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => {setIsModalOpen(true)};
+  const closeModal = () => {setIsModalOpen(false)};
+  
   const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: ''
+  });
+  
+  const [errors, setErrors] = useState({
     fullName: '',
     email: '',
     username: '',
@@ -18,31 +30,60 @@ const Auth = () => {
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setErrors(prev => ({ ...prev, [e.target.name]: '' }));  // Clear error on input change
   };
 
   const clearField = (field) => {
     setFormData(prev => ({ ...prev, [field]: '' }));
+    setErrors(prev => ({ ...prev, [field]: '' })); // Clear error when clearing field
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.username) newErrors.username = 'Username is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
+    if (!formData.password) newErrors.password = 'Password is required';
+    if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!isLogin && formData.confirmPassword !== formData.password) newErrors.confirmPassword = 'Passwords do not match';
+    if (!isLogin && !formData.fullName) newErrors.fullName = 'Full name is required';
+    return newErrors;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
+    if (Object.keys(validationErrors).length === 0) {
+      openModal();
+      console.log('Form submitted');
+    }
   };
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden bg-gradient-to-br from-white via-blue-50 to-blue-100">
-      {/* Left: Form */}
-      <div className="w-full lg:w-1/2 flex justify-center items-center bg-gradient-to-br from-slate-100 via-blue-100 to-gray-200">
-        <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl w-[92%] max-w-md px-8 py-6 flex flex-col max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-transparent">
-
+    <div
+      className="h-screen w-screen flex items-center justify-center p-4"
+      style={{
+        background: 'linear-gradient(to bottom right, rgb(222, 220, 210), rgb(140, 138, 135))'
+      }}
+    >
+      {/* Card with form + image */}
+      <div className="flex flex-col md:flex-row w-full max-w-5xl md:h-[85vh] shadow-2xl rounded-2xl overflow-hidden bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md">
+        {/* Left: Form */}
+        <div className={`w-full md:w-1/2 max-h-[85vh] overflow-y-auto px-8 pt-4 ${isLogin ? 'flex flex-col justify-center':''}`}>
           {/* Form Header */}
-          <div className="flex flex items-center justify-evenly mb-4">
-            <img src={logoimage} alt="DocuVault" className="h-22 w-auto bg-gray-100 rounded-lg p-2 shadow-md" />
+          <div className="flex items-center justify-evenly mb-4">
+            <img src={logoimage} alt="DocuVault" className="h-20 w-auto bg-gray-100 rounded-lg p-2 shadow-md" />
             <div className='ml-6'>
               <h4 className="text-xl font-semibold text-left text-gray-800">
                 {isLogin ? 'Log into Docuvault' : 'Create new account in Docuvault'}
               </h4>
-              <div className="border-t-2 border-gray-500 my-4 shadow-lg mx-auto w-[100%] opacity-75"></div>
+              <div className="border-t-2 border-gray-500 my-4 shadow-lg mx-auto w-full opacity-75"></div>
             </div>
           </div>
 
           {/* Form Fields */}
-          <form className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 mt-6">
             {!isLogin && (
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -57,6 +98,7 @@ const Auth = () => {
                 {formData.fullName && (
                   <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('fullName')} />
                 )}
+                {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
               </div>
             )}
 
@@ -74,6 +116,7 @@ const Auth = () => {
                 {formData.email && (
                   <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('email')} />
                 )}
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
               </div>
             )}
 
@@ -90,6 +133,7 @@ const Auth = () => {
               {formData.username && (
                 <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('username')} />
               )}
+              {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
             </div>
 
             <div className="relative">
@@ -110,6 +154,7 @@ const Auth = () => {
                   <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('password')} />
                 </>
               )}
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
 
             {!isLogin && (
@@ -126,12 +171,14 @@ const Auth = () => {
                 {formData.confirmPassword && (
                   <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('confirmPassword')} />
                 )}
+                {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
             )}
 
             <button
               type="submit"
               className="w-full bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition duration-300"
+              disabled={Object.keys(errors).some((key) => errors[key])}
             >
               {isLogin ? 'Login' : 'Sign Up'}
             </button>
@@ -148,13 +195,14 @@ const Auth = () => {
             </button>
           </p>
         </div>
-      </div>
 
-      {/* Right: Image */}
-      <div
-        className="hidden lg:block w-1/2 h-full bg-cover bg-center"
-        style={{ backgroundImage: `url(${docuvaultimage})` }}
-      />
+        {/* Right: Image */}
+        <div
+          className="w-full md:w-1/2 bg-cover bg-center md:block"
+          style={{ backgroundImage: `url(${docuvaultimage})` }}
+        />
+      </div>
+      <OTPModal isOpen={isModalOpen} onClose={closeModal} />
     </div>
   );
 };
