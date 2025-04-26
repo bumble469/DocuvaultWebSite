@@ -3,13 +3,18 @@ import { Eye, EyeOff, X } from 'lucide-react';
 import docuvaultimage from '../../assets/images/docuvaultimage.jpg';
 import logoimage from '../../assets/images/logowithtext.png';
 import OTPModal from './components/otpmodal';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
 const Auth = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => {setIsModalOpen(true)};
-  const closeModal = () => {setIsModalOpen(false)};
-  
+  const openModal = () => { setIsModalOpen(true) };
+  const closeModal = () => { setIsModalOpen(false) };
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -26,37 +31,107 @@ const Auth = () => {
     confirmPassword: ''
   });
 
-  const toggleAuthMode = () => setIsLogin(!isLogin);
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    setFormData({
+      fullName: '',
+      email: '',
+      username: '',
+      password: '',
+      confirmPassword: ''
+    });
+    setErrors({
+      fullName: '',
+      email: '',
+      username: '',
+      password: '',
+      confirmPassword: ''
+    });
+    setShowPassword(false);
+  };
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }));  
+    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
   };
 
   const clearField = (field) => {
     setFormData(prev => ({ ...prev, [field]: '' }));
-    setErrors(prev => ({ ...prev, [field]: '' })); 
+    setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   const validate = () => {
     const newErrors = {};
-    if (!formData.username) newErrors.username = 'Username is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
-    if (!formData.password) newErrors.password = 'Password is required';
-    if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!isLogin && formData.confirmPassword !== formData.password) newErrors.confirmPassword = 'Passwords do not match';
-    if (!isLogin && !formData.fullName) newErrors.fullName = 'Full name is required';
+    if(isLogin){
+      if (!formData.username) newErrors.username = 'Username is required';
+      if (!formData.password) newErrors.password = 'Password is required';
+    }
+    else{
+      if (!formData.fullName) newErrors.fullName = 'Full Name is required';
+      if (!formData.email) newErrors.email = 'Email is required';
+      if (!formData.username) newErrors.username = 'Username is required';
+      if (!formData.password) newErrors.password = 'Password is required';
+      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    }
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     setErrors(validationErrors);
+  
     if (Object.keys(validationErrors).length === 0) {
-      openModal();
-      console.log('Form submitted');
+      try {
+        setIsLoading(true);
+        if (isLogin) {
+          // LOGIN
+          const response = await axios.post('http://localhost:8000/users/login/', {
+            username: formData.username,
+            password: formData.password,
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          if (response.data.success) {
+            toast.success('Login successful! 🎉');
+            setIsLoading(false);
+            setFormData(prev => ({ ...prev, fullName: '', email: '', username: '', password: '', confirmPassword: '' }));
+            navigate('/dashboard');
+          } else {
+            toast.error('Error: ', response.data.message || 'An error occurred. Please try again.');
+            setIsLoading(false);
+          }
+        } else {
+          const response = await axios.post('http://localhost:8000/users/send_otp/', {
+            full_name: formData.fullName,
+            username: formData.username,
+            email: formData.email,
+            password: formData.password,
+            aadhar_number: null,
+            profile_picture: null,
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });          
+          if(response.data.success) {
+            toast.info('Second Step: ', response.data.message );
+            openModal(); 
+            setIsLoading(false);
+          }
+          else{
+            toast.error('Error: ', response.data.message  || 'An error occurred. Please try again.');
+            setIsLoading(false);
+          }
+        }
+      } catch (error) {
+        toast.error(`Invalid credentials. Please try again. ❌`);
+      }
+      finally{
+        setIsLoading(false);
+      }
     }
   };
 
@@ -177,32 +252,41 @@ const Auth = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition duration-300"
-              disabled={Object.keys(errors).some((key) => errors[key])}
+              className="w-full bg-blue-500 text-white py-2 rounded-lg font-semibold hover:bg-blue-600 transition duration-300 flex items-center justify-center"
+              disabled={isLoading || Object.keys(errors).some((key) => errors[key])}
             >
-              {isLogin ? 'Login' : 'Sign Up'}
+              {isLoading ? (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 1116 0A8 8 0 014 12z"></path>
+                </svg>
+              ) : isLogin ? (
+                'Log In'
+              ) : (
+                'Sign Up'
+              )}
             </button>
           </form>
 
-          {/* Switch Link */}
-          <p className="text-center mt-4 text-sm text-gray-600">
-            {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
-            <button
-              onClick={toggleAuthMode}
-              className="text-blue-500 hover:underline font-medium"
-            >
-              {isLogin ? 'Sign Up' : 'Login'}
-            </button>
-          </p>
+          <div className="text-center mt-6">
+            <p className="text-gray-600 text-sm">
+              {isLogin ? 'Don\'t have an account?' : 'Already have an account?'}
+              <button
+                onClick={toggleAuthMode}
+                className="ml-1 text-blue-500 font-semibold hover:text-blue-600 transition duration-200"
+              >
+                {isLogin ? 'Sign up' : 'Log in'}
+              </button>
+            </p>
+          </div>
         </div>
 
         {/* Right: Image */}
-        <div
-          className="w-full md:w-1/2 bg-cover bg-center md:block"
-          style={{ backgroundImage: `url(${docuvaultimage})` }}
-        />
+        <div className="w-full md:w-1/2 bg-cover bg-center" style={{ backgroundImage: `url(${docuvaultimage})` }} />
       </div>
-      <OTPModal isOpen={isModalOpen} onClose={closeModal} />
+
+      {/* OTP Modal */}
+      {isModalOpen && <OTPModal closeModal={closeModal} />}
     </div>
   );
 };

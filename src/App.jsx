@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Auth from './pages/Auth/index.jsx';
 import Dashboard from './pages/Dashboard/index.jsx';
 import Header from './components/Header/index.jsx';
-
+import { ToastContainer } from 'react-toastify';
 function App() {
   return (
     <ThemeProvider>
@@ -20,6 +20,7 @@ const AppContent = () => {
   return(
     <>
       {location.pathname !== '/' && <Header /> }
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
