@@ -11,6 +11,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => { setIsModalOpen(true) };
   const closeModal = () => { setIsModalOpen(false) };
@@ -48,33 +49,61 @@ const Auth = () => {
       confirmPassword: ''
     });
     setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  
+    const fieldError = validateField(name, value);
+    setErrors(prev => ({ ...prev, [name]: fieldError }));
   };
+  
 
   const clearField = (field) => {
     setFormData(prev => ({ ...prev, [field]: '' }));
     setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
+  const validateField = (name, value) => {
+    let error = '';
+  
+    if (isLogin) {
+      if (name === 'username' && !value) error = 'Username is required';
+      if (name === 'password' && !value) error = 'Password is required';
+    } else {
+      if (name === 'fullName' && !value) error = 'Full Name is required';
+      if (name === 'email' && !value) error = 'Email is required';
+      if (name === 'username' && !value) error = 'Username is required';
+      if (name === 'password') {
+        if (!value) {
+          error = 'Password is required';
+        } else {
+          const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$/;
+          if (!passwordRegex.test(value)) {
+            error = 'Password must have at least one uppercase letter, one special character, and one digit';
+          }
+        }
+      }
+      if (name === 'confirmPassword') {
+        if (value !== formData.password) error = 'Passwords do not match';
+      }
+    }
+  
+    return error;
+  };  
+
   const validate = () => {
     const newErrors = {};
-    if(isLogin){
-      if (!formData.username) newErrors.username = 'Username is required';
-      if (!formData.password) newErrors.password = 'Password is required';
-    }
-    else{
-      if (!formData.fullName) newErrors.fullName = 'Full Name is required';
-      if (!formData.email) newErrors.email = 'Email is required';
-      if (!formData.username) newErrors.username = 'Username is required';
-      if (!formData.password) newErrors.password = 'Password is required';
-      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    }
+  
+    Object.keys(formData).forEach((field) => {
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
+    });
+  
     return newErrors;
-  };
+  };  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -96,11 +125,13 @@ const Auth = () => {
           });
           if (response.data.success) {
             toast.success('Login successful! 🎉');
+            const token = response.data.access_token;
+            document.cookie = `access_token=${token}; path=/; HttpOnly; Secure`;
             setIsLoading(false);
             setFormData(prev => ({ ...prev, fullName: '', email: '', username: '', password: '', confirmPassword: '' }));
             navigate('/dashboard');
           } else {
-            toast.error('Error: ', response.data.message || 'An error occurred. Please try again.');
+            toast.error(`Error: ${response.data.message || 'An error occurred. Please try again.'}`);
             setIsLoading(false);
           }
         } else {
@@ -117,12 +148,12 @@ const Auth = () => {
             }
           });          
           if(response.data.success) {
-            toast.info('Second Step: ', response.data.message );
+            toast.info(`Second Step: ${response.data.message}`);
             openModal(); 
             setIsLoading(false);
           }
           else{
-            toast.error('Error: ', response.data.message  || 'An error occurred. Please try again.');
+            toast.error(`Error: ${response.data.message || 'An error occurred. Please try again.'}`);
             setIsLoading(false);
           }
         }
@@ -145,9 +176,9 @@ const Auth = () => {
       {/* Card with form + image */}
       <div className="flex flex-col md:flex-row w-full max-w-5xl md:h-[85vh] shadow-2xl rounded-2xl overflow-hidden bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-md">
         {/* Left: Form */}
-        <div className={`w-full md:w-1/2 max-h-[85vh] overflow-y-auto px-8 pt-4 ${isLogin ? 'flex flex-col justify-center':''}`}>
+        <div className={`w-full md:w-1/2 max-h-[85vh] overflow-y-auto px-8 pt-4 ${isLogin ? 'flex flex-col justify-center':'mb-4'}`}>
           {/* Form Header */}
-          <div className="flex items-center justify-evenly mb-4">
+          <div className="flex items-center justify-evenly mb-4 !text-black">
             <img src={logoimage} alt="DocuVault" className="h-20 w-auto bg-gray-100 rounded-lg p-2 shadow-md" />
             <div className='ml-6'>
               <h4 className="text-xl font-semibold text-left text-gray-800">
@@ -158,7 +189,7 @@ const Auth = () => {
           </div>
 
           {/* Form Fields */}
-          <form onSubmit={handleSubmit} className="space-y-5 mt-6">
+          <form onSubmit={handleSubmit} className="space-y-5 mt-6 !text-black">
             {!isLogin && (
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">Full Name</label>
@@ -236,7 +267,7 @@ const Auth = () => {
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
@@ -244,7 +275,12 @@ const Auth = () => {
                   placeholder="Re-enter your password"
                 />
                 {formData.confirmPassword && (
-                  <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('confirmPassword')} />
+                  <>
+                    <span className="absolute right-8 top-8 text-gray-500 cursor-pointer" onClick={() => setShowConfirmPassword(!showPassword)}>
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </span>
+                    <X className="absolute right-2 top-8 w-4 h-4 cursor-pointer text-gray-500" onClick={() => clearField('confirmPassword')} />
+                  </>
                 )}
                 {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
               </div>
@@ -270,7 +306,7 @@ const Auth = () => {
 
           <div className="text-center mt-6">
             <p className="text-gray-600 text-sm">
-              {isLogin ? 'Don\'t have an account?' : 'Already have an account?'}
+              {isLogin ? 'Don\'t have an account? ' : 'Already have an account? '}
               <button
                 onClick={toggleAuthMode}
                 className="ml-1 text-blue-500 font-semibold hover:text-blue-600 transition duration-200"
@@ -281,12 +317,12 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Right: Image */}
         <div className="w-full md:w-1/2 bg-cover bg-center" style={{ backgroundImage: `url(${docuvaultimage})` }} />
       </div>
 
-      {/* OTP Modal */}
-      {isModalOpen && <OTPModal closeModal={closeModal} />}
+      {isModalOpen && (
+      <OTPModal isOpen={isModalOpen} onClose={closeModal} setIsLogin={setIsLogin} email={formData.email} />
+    )}
     </div>
   );
 };

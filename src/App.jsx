@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
 import { ThemeProvider } from './context/ThemeContext'; 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -6,6 +7,7 @@ import Auth from './pages/Auth/index.jsx';
 import Dashboard from './pages/Dashboard/index.jsx';
 import Header from './components/Header/index.jsx';
 import { ToastContainer } from 'react-toastify';
+
 function App() {
   return (
     <ThemeProvider>
@@ -17,13 +19,15 @@ function App() {
 }
 const AppContent = () => {
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
+
   return(
     <>
-      {location.pathname !== '/' && <Header /> }
+      {location.pathname !== '/' && <Header setSearchQuery={setSearchQuery} /> }
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Auth />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard searchQuery={searchQuery} />} />
       </Routes>
     </>
   )

@@ -37,21 +37,24 @@ const OTPModal = ({ isOpen, onClose, setIsLogin, email }) => {
     }
   };
 
-  // Submit handler for the form
   const handleSubmit = (e) => {
     e.preventDefault();
-    handleOTPVerify(otp);  // Pass the OTP state directly
+    handleOTPVerify(otp); 
   };
 
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex justify-center items-center z-50"
+        style={{
+          backdropFilter: 'blur(1px)', // This applies the blur effect to the background
+          backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent dark overlay
+        }}>
           <div className="bg-white w-96 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold mb-4 text-center">Enter OTP</h3>
+            <h3 className="!text-black text-xl font-semibold mb-4 text-center">Enter OTP</h3>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="otp" className="block text-sm font-medium !text-gray-700">
                   OTP
                 </label>
                 <input
@@ -59,7 +62,7 @@ const OTPModal = ({ isOpen, onClose, setIsLogin, email }) => {
                   id="otp"
                   value={otp}
                   onChange={handleChange}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="!text-black mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your 6-digit OTP"
                   maxLength="6"
                   autoFocus

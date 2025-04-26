@@ -2,6 +2,7 @@
 /* index.css or App.css */
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow:hidden; /* Prevent horizontal overflow */
   }
   
   body.light {
@@ -21,5 +22,8 @@ body {
   
   body.dark .text-white {
     color: #ffffff;
+  }
+  body.dark .filter-checkboxes{
+    border-color:rgb(197, 197, 197); /* Dark mode border color */
   }
   
