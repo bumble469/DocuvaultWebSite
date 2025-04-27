@@ -5,7 +5,8 @@ import { toast } from 'react-toastify';
 const OTPModal = ({ isOpen, onClose, setIsLogin, email }) => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const API_URL = import.meta.env.VITE_API_URL;
+  
   const handleChange = (e) => {
     setOtp(e.target.value);
   };;
@@ -13,7 +14,7 @@ const OTPModal = ({ isOpen, onClose, setIsLogin, email }) => {
   const handleOTPVerify = async (otpValue) => {
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:8000/users/verify_otp/', {
+      const response = await axios.post(`${API_URL}/users/verify_otp/`, {
         email: email,
         otp: otpValue,
       }, {

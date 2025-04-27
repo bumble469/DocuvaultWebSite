@@ -9,6 +9,7 @@ import Header from './components/Header/index.jsx';
 import { ToastContainer } from 'react-toastify';
 
 function App() {
+  
   return (
     <ThemeProvider>
       <Router>
@@ -20,7 +21,7 @@ function App() {
 const AppContent = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-
+  
   return(
     <>
       {location.pathname !== '/' && <Header setSearchQuery={setSearchQuery} /> }

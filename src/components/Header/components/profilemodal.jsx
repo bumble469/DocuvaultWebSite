@@ -9,7 +9,10 @@ const ProfileModal = ({ onClose }) => {
   const [errors, setErrors] = useState({ email: '', aadhar_number: '' });
   const API_URL = import.meta.env.VITE_API_URL;
   const [imagePreview, setImagePreview] = useState(null);
-  
+  const [originalEmail, setOriginEmail] = useState();
+  const [otpVerificationModal, setOtpVerificationModal] = useState(false);
+  const [otp, setOtp] = useState(''); // Added OTP state
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -22,6 +25,7 @@ const ProfileModal = ({ onClose }) => {
             aadhar_number: response.data.user.aadhar_number || '',
             profile_picture: response.data.user.profile_picture || dummyimg,
           });
+          setOriginEmail(response.data.user.email);
         } else {
           toast.error(`Error during profile update! ${response.data.message}`);
         }
@@ -33,7 +37,6 @@ const ProfileModal = ({ onClose }) => {
     fetchUserData();
   }, []);
   
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -113,26 +116,68 @@ const ProfileModal = ({ onClose }) => {
     try {
       if (validateForm()) {
         setIsEditing(false);
-  
-        // Make the API call to update user data
-        const response = await axios.post(
-          `${API_URL}/users/update`,
-          { ...userData },
-          { withCredentials: true }
-        );
-    
-        if (response.data.success === true) {
-          toast.success(`Profile Updated! ${response.data.message}`);
+        
+        const isEmailUpdated = userData.email !== originalEmail;
+
+        if (isEmailUpdated) {
+          const otpResponse = await axios.post(
+            `${API_URL}/users/update/send_otp/`,
+            { user_email: userData.email },
+            { withCredentials: true }
+          );
+
+          if (otpResponse.data.success) {
+              setOtpVerificationModal(true);
+          } else {
+            toast.error("Failed to send OTP. Please try again.");
+          }
         } else {
-          toast.error(`Profile update failed! ${response.data.message}`);
+          const response = await axios.post(
+            `${API_URL}/users/update/`,
+            { ...userData },
+            { withCredentials: true }
+          );
+  
+          if (response.data.success) {
+            toast.success(`Profile Updated! ${response.data.message}`);
+          } else {
+            toast.error(`Profile update failed! ${response.data.message}`);
+          }
         }
       }
     } catch (error) {
       toast.error("An error occurred while updating the profile.");
     }
   };
-  
-  
+
+  const handleOtpSubmit = async () => {
+    try {
+      const verifyOtpResponse = await axios.post(
+        `${API_URL}/users/update/verify_otp/`,
+        { user_email: userData.email, otp },
+        { withCredentials: true }
+      );
+
+      if (verifyOtpResponse.data.success) {
+        const response = await axios.post(
+          `${API_URL}/users/update/`,
+          { ...userData },
+          { withCredentials: true }
+        );
+
+        if (response.data.success) {
+          toast.success(`Profile Updated! ${response.data.message}`);
+          setOtpVerificationModal(false);
+        } else {
+          toast.error(`Profile update failed! ${response.data.message}`);
+        }
+      } else {
+        toast.error("Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Error verifying OTP.");
+    }
+  };
 
   return (
     <div
@@ -197,8 +242,7 @@ const ProfileModal = ({ onClose }) => {
                 value={userData.full_name || ''}
                 onChange={handleChange}
                 readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'focus:ring-blue-400' : ''} text-sm md:text-base`}
-              />
+                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
@@ -209,8 +253,7 @@ const ProfileModal = ({ onClose }) => {
                 value={userData.username || ''}
                 onChange={handleChange}
                 readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'focus:ring-blue-400' : ''} text-sm md:text-base`}
-              />
+                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
             </div>
 
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
@@ -221,39 +264,69 @@ const ProfileModal = ({ onClose }) => {
                 value={userData.email || ''}
                 onChange={handleChange}
                 readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'focus:ring-blue-400' : ''} text-sm md:text-base`}
-              />
+                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
             </div>
             {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
 
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
               <label className="text-gray-600 text-sm w-32">Aadhar Number:</label>
-              <div className="flex flex-col">
-                <label className="text-gray-500 text-xs mb-1">Link Aadhar for document uploads</label>
-                <input
-                  type="text"
-                  name="aadhar_number"
-                  value={userData.aadhar_number || ''}
-                  onChange={handleChange}
-                  readOnly={!isEditing}
-                  maxLength={12}
-                  className="border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 text-sm md:text-base"
-                />
+              <div className = "flex flex-col">
+              <label className="text-gray-600 text-xs w-auto">
+                {userData.aadhar_number === "" ? 'Link aadhar to upload documents' : ''}
+              </label>
+              <input
+                type="text"
+                name="aadhar_number"
+                value={userData.aadhar_number || ''}
+                onChange={handleChange}
+                readOnly={!isEditing}
+                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
               </div>
-              {errors.aadhar_number && <span className="text-red-500 text-xs mt-1">{errors.aadhar_number}</span>}
+            </div>
+            {errors.aadhar_number && (
+              <span className="text-red-500 text-xs mt-1">{errors.aadhar_number}</span>
+            )}
+
+            <div className="flex justify-end !space-x-4 mt-4">
+              <button
+                className="px-4 py-2 bg-gray-400 hover:bg-gray-600 text-white !rounded-xs"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-500 text-white !rounded-xs hover:bg-blue-600"
+                onClick={handleSave}
+                disabled={!isEditing}
+              >
+                Save Changes
+              </button>
             </div>
           </div>
         </div>
-
-        <div className="mt-8 flex justify-center">
-          <button
-            className="px-6 py-2 bg-green-600 text-white !rounded-xs hover:bg-green-700 transition-all text-sm md:text-base"
-            onClick={handleSave}
-          >
-            {isEditing ? 'Save Changes' : 'Save'}
-          </button>
-        </div>
       </div>
+
+      {/* OTP Modal */}
+      {otpVerificationModal && (
+        <div className="fixed inset-0 flex justify-center items-center z-50 p-4">
+          <div className="email_update_otp_modal p-6 rounded-md shadow-lg w-full max-w-md bg-white">
+            <h3 className="text-2xl font-bold">Enter OTP</h3>
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter OTP"
+              className="border border-gray-300 rounded-md p-2 text-gray-800 w-full mt-4"
+            />
+            <button
+              className="w-full mt-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              onClick={handleOtpSubmit}
+            >
+              Verify OTP
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
