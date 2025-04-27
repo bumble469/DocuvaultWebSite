@@ -121,7 +121,8 @@ const Auth = () => {
           }, {
             headers: {
               'Content-Type': 'application/json'
-            }
+            },
+            withCredentials: true
           });
           if (response.data.success) {
             toast.success('Login successful! 🎉');

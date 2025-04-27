@@ -1,23 +1,46 @@
 import React, { useContext, useState } from 'react';
 import logo from '../../assets/images/logo1.png';
-import { FaUserCircle, FaUpload, FaSearch } from 'react-icons/fa';
+import { FaUserCircle, FaUpload, FaSearch, FaHistory, FaQuestionCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import sunicon from '../../assets/images/sunicon.png';
 import moonicon from '../../assets/images/moonicon.png';
 import bellicondark from '../../assets/images/bellicon.png';
 import belliconwhite from '../../assets/images/belliconwhite.png';
 import { useMediaQuery } from 'react-responsive';
 import ThemeContext from '../../context/ThemeContext.jsx';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import ProfileModal from './components/profilemodal.jsx';
 
 const Header = ({ setSearchQuery }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const { theme, toggleTheme } = useContext(ThemeContext);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
+  const navigate = useNavigate();
   const toggleDarkMode = () => {
     toggleTheme();
   };
 
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post('http://localhost:8000/users/logout/', {}, { withCredentials: true });
+      if (response.data.success) {
+        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
+        navigate('/');
+        toast.success('Logout successful! Redirecting to login page...');
+      } else {
+        toast.error(`Logout failed: ${response.data.message}. Please try again.`);
+      }
+    } catch (error) {
+      toast.error(`Logout failed. Please try again.`);
+    }
+  };
+
   return (
-    <header className={`w-full shadow-sm p-1 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-gray-800'}`}>
+    <header className={`w-full p-1 ${theme === 'dark' ? 'bg-gray-700 text-white shadow-sm' : 'bg-white text-gray-800 shadow-sm'}`}>
       <div className="flex items-center px-2 justify-between w-full">
         {/* Logo with title text */}
         <div className="flex items-center space-x-3">
@@ -28,7 +51,7 @@ const Header = ({ setSearchQuery }) => {
           />
           <div className={`h-10 border-l-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}></div>
           <div className="mt-2">
-            <h3 className={`!text-sm md:!text-xl lg:!text-2xl font-semibold leading-tight m-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>DOCUVAULT</h3>
+            <h3 className={`!font-bold !text-sm md:!text-xl lg:!text-2xl font-semibold leading-tight m-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>DOCUVAULT</h3>
             <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>your personal document wallet</p>
           </div>
         </div>
@@ -74,10 +97,33 @@ const Header = ({ setSearchQuery }) => {
           </button>
 
           {/* Profile Icon */}
-          <button className={`md:!text-3xl ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} transition duration-300 hover:bg-blue-100 p-2.5 m-1`}>
+          <button 
+            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+            className={`!text-xl md:!text-3xl ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} transition duration-300 hover:bg-blue-100 p-2.5 m-1`
+            }>
             <FaUserCircle />
           </button>
         </div>
+        {showProfileDropdown && (
+          <div className={`absolute right-4 top-16 w-56 rounded-lg shadow-xl z-50 py-3 px-2 transition-all duration-300 ease-in-out ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}>
+            <button 
+              onClick={() => setShowProfileModal(true)}
+              className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
+              <FaUser className="mr-3 text-lg" /> View Profile
+            </button>
+            <button className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
+              <FaHistory className="mr-3 text-lg" /> Activity History
+            </button>
+            <button className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
+              <FaQuestionCircle className="mr-3 text-lg" /> Help/Support
+            </button>
+            <button 
+              onClick={() => setShowLogoutDialog(true)}
+              className="flex items-center w-full px-2 py-2 rounded-md text-red-500 hover:bg-gray-200 transition-all duration-200">
+                <FaSignOutAlt className="mr-3 text-lg" /> Logout
+            </button>
+          </div>
+        )}
       </div>
 
       {isMobile && (
@@ -103,6 +149,30 @@ const Header = ({ setSearchQuery }) => {
             <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
             <span>Upload</span>
           </a>
+        </div>
+      )}
+      {showProfileModal && <ProfileModal onClose={() => setShowProfileModal(false)} />}
+      {showLogoutDialog && (
+         <div className="fixed inset-0 flex justify-center items-center z-50"
+         style={{
+           backdropFilter: 'blur(1px)', // This applies the blur effect to the background
+           backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent dark overlay
+         }}>
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="!text-2xl font-semibold text-gray-800 mb-4">Are you sure you want to logout?</h3>
+            <div className="flex justify-end !space-x-4">
+              <button 
+                onClick={() => setShowLogoutDialog(false)} 
+                className="px-3 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-all duration-200">
+                Cancel
+              </button>
+              <button 
+                onClick={handleLogout} 
+                className="px-3 py-2 bg-red-800 text-white rounded-md hover:bg-red-600 transition-all duration-200">
+                Logout
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </header>

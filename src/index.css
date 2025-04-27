@@ -1,29 +1,40 @@
 @import "tailwindcss";
 /* index.css or App.css */
+/* index.css or App.css */
+@font-face {
+  font-family: 'YourCustomFont'; /* You can name this whatever you want */
+  src: url('./assets/fonts/MuliLight-lg9VZ.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-    transition: background-color 0.3s ease, color 0.3s ease;
-    overflow:hidden; /* Prevent horizontal overflow */
-  }
-  
-  body.light {
-    background-color: #ffffff; /* Light mode background */
-    color: #000000; /* Light mode text */
-  }
-  
-  body.dark {
-    background-color: #121212; /* Dark mode background */
-    color: #ffffff; /* Dark mode text */
-  }
-  
-  /* Tailwind dark mode utilities */
-  body.dark .bg-gray-800 {
-    background-color: #333333;
-  }
-  
-  body.dark .text-white {
-    color: #ffffff;
-  }
-  body.dark .filter-checkboxes{
-    border-color:rgb(197, 197, 197); /* Dark mode border color */
-  }
+  font-family: 'YourCustomFont', sans-serif !important; /* Use your custom font */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow: hidden; /* Prevent horizontal overflow */
+}
+
+body.light {
+  background-color: #ffffff; /* Light mode background */
+  color:rgb(42, 42, 42); /* Light mode text */
+}
+
+body.dark {
+  background-color:rgb(30, 30, 30); /* Dark mode background */
+  color:rgb(221, 221, 221); /* Dark mode text */
+}
+
+/* Tailwind dark mode utilities */
+body.dark .bg-gray-800 {
+  background-color: #333333;
+}
+
+body.dark .text-white {
+  color: #ffffff;
+}
+
+body.dark .filter-checkboxes {
+  border-color: rgb(197, 197, 197); /* Dark mode border color */
+}
+
   
