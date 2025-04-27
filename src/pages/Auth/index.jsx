@@ -31,6 +31,7 @@ const Auth = () => {
     password: '',
     confirmPassword: ''
   });
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
@@ -115,7 +116,7 @@ const Auth = () => {
         setIsLoading(true);
         if (isLogin) {
           // LOGIN
-          const response = await axios.post('http://localhost:8000/users/login/', {
+          const response = await axios.post(`${API_URL}/users/login/`, {
             username: formData.username,
             password: formData.password,
           }, {
@@ -136,7 +137,7 @@ const Auth = () => {
             setIsLoading(false);
           }
         } else {
-          const response = await axios.post('http://localhost:8000/users/send_otp/', {
+          const response = await axios.post(`${API_URL}/users/send_otp/`, {
             full_name: formData.fullName,
             username: formData.username,
             email: formData.email,
