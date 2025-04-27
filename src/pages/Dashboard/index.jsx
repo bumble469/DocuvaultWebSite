@@ -194,7 +194,7 @@ const Dashboard = ({ searchQuery }) => {
                     className="document-item pb-3 mb-4 border rounded-lg shadow-sm hover:shadow-xl cursor-pointer transition duration-300"
                   >
                     <div className="document-preview mb-2">
-                      <div className="bg-gray-200 h-48 rounded-lg"></div>
+                      <div className="bg-gray-200 h-40 md:h-70 rounded-xs"></div>
                     </div>
                     <div className="document-info text-center">
                       <span className="font-medium">{doc.name}</span>

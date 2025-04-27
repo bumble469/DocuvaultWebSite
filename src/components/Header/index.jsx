@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import logo from '../../assets/images/logo1.png';
 import { FaUserCircle, FaUpload, FaSearch, FaHistory, FaQuestionCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import sunicon from '../../assets/images/sunicon.png';
@@ -18,11 +18,28 @@ const Header = ({ setSearchQuery }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [userImage, setUserImage] = useState();
 
   const navigate = useNavigate();
   const toggleDarkMode = () => {
     toggleTheme();
   };
+
+  useEffect(()=>{
+    const fetchUserImage = async () => {
+      try {
+        const response = await axios.post("http://localhost:8000/users/details/", {}, { withCredentials: true });
+        if (response.data.success === true) {
+          setUserImage(response.data.user.profile_picture)
+        } else {
+          console.log("Failed with status:", response.data.status);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+    fetchUserImage()
+  },[showProfileModal])
 
   const handleLogout = async () => {
     try {
@@ -99,9 +116,14 @@ const Header = ({ setSearchQuery }) => {
           {/* Profile Icon */}
           <button 
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            className={`!text-xl md:!text-3xl ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} transition duration-300 hover:bg-blue-100 p-2.5 m-1`
-            }>
-            <FaUserCircle />
+            className="flex items-center justify-center rounded-full overflow-hidden p-1 m-1 hover:bg-blue-100 transition-bg duration-200"
+            style={{ height: '50px', width: '50px' }}
+          >
+            <img 
+              src={userImage} 
+              alt="Profile" 
+              className="object-cover w-full h-full rounded-full"
+            />
           </button>
         </div>
         {showProfileDropdown && (
@@ -158,8 +180,8 @@ const Header = ({ setSearchQuery }) => {
            backdropFilter: 'blur(1px)', // This applies the blur effect to the background
            backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent dark overlay
          }}>
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-            <h3 className="!text-2xl font-semibold text-gray-800 mb-4">Are you sure you want to logout?</h3>
+          <div className="confirm-logout-dialog p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="!text-2xl font-semibold 0 mb-4">Are you sure you want to logout?</h3>
             <div className="flex justify-end !space-x-4">
               <button 
                 onClick={() => setShowLogoutDialog(false)} 
