@@ -37,4 +37,63 @@ body.dark .filter-checkboxes {
   border-color: rgb(197, 197, 197); /* Dark mode border color */
 }
 
+body.light .profile-modal{
+  background-color:rgb(225, 225, 225); /* Light mode background */
+  color: rgb(42, 42, 42); /* Light mode text */
+}
+
+body.light .profile-modal input{
+  color: rgb(42, 42, 42); /* Light mode text */
+}
+
+body.dark .profile-modal{
+  background-color: rgb(36, 36, 36); /* Dark mode background */
+  color: rgb(221, 221, 221); /* Dark mode text */
+}
+
+body.dark .profile-modal input{
+  color: rgb(202, 202, 202); /* Light mode text */
+  border: 1px solid white
+}
+body.light .profile-modal input{
+  color:black;
+  border:1px solid black !important
+}
+/* For webkit-based browsers (Chrome, Safari, etc.) */
+body ::-webkit-scrollbar {
+  width: 8px; /* Adjust the width of the scrollbar */
+}
+
+body ::-webkit-scrollbar-track {
+  background: transparent; /* Remove the scrollbar track background */
+}
+
+body ::-webkit-scrollbar-thumb {
+  background-color: #555; /* Dark thumb for dark mode */
+  border-radius: 10px; /* Optional: makes the thumb rounded */
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: #aaa; /* Lighter thumb for dark mode */
+}
+
+/* For Firefox */
+body {
+  scrollbar-width: thin; /* Makes the scrollbar thinner */
+  scrollbar-color: #555 transparent; /* Dark thumb with transparent background */
+}
+
+body.dark {
+  scrollbar-color: #aaa transparent; /* Lighter thumb for dark mode */
+}
+
+body.light .confirm-logout-dialog{
+  color:rgb(32, 32, 32);
+  background:rgb(250,250,250)
+}
+body.dark .confirm-logout-dialog{
+  background:rgb(32, 32, 32);
+  color:rgb(250,250,250)
+}
+
   
