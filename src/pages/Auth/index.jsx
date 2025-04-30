@@ -170,7 +170,7 @@ const Auth = () => {
 
   return (
     <div
-      className="h-screen w-screen flex items-center justify-center p-4"
+      className="auth h-screen w-screen flex items-center justify-center p-4"
       style={{
         background: 'linear-gradient(to bottom right, rgb(222, 220, 210), rgb(140, 138, 135))'
       }}
@@ -194,7 +194,7 @@ const Auth = () => {
           <form onSubmit={handleSubmit} className="space-y-5 mt-6 !text-black">
             {!isLogin && (
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                <label className="block text-sm font-medium !text-gray-700">Full Name</label>
                 <input
                   type="text"
                   name="fullName"
@@ -212,7 +212,7 @@ const Auth = () => {
 
             {!isLogin && (
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label className="block text-sm font-medium !text-gray-700">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -229,7 +229,7 @@ const Auth = () => {
             )}
 
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700">Username</label>
+              <label className="block text-sm font-medium !text-gray-700">Username</label>
               <input
                 type="text"
                 name="username"
@@ -245,7 +245,7 @@ const Auth = () => {
             </div>
 
             <div className="relative">
-              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <label className="block text-sm font-medium !text-gray-700">Password</label>
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -267,7 +267,7 @@ const Auth = () => {
 
             {!isLogin && (
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <label className="block text-sm font-medium !text-gray-700">Confirm Password</label>
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name="confirmPassword"

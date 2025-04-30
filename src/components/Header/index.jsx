@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import logo from '../../assets/images/logo1.png';
-import { FaUserCircle, FaUpload, FaSearch, FaHistory, FaQuestionCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
+import { FaUpload, FaSearch, FaHistory, FaQuestionCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import sunicon from '../../assets/images/sunicon.png';
 import moonicon from '../../assets/images/moonicon.png';
 import bellicondark from '../../assets/images/bellicon.png';
@@ -19,7 +19,28 @@ const Header = ({ setSearchQuery }) => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [userImage, setUserImage] = useState();
+  const API_URL = import.meta.env.VITE_API_URL;
+  const [uploadButton, setUploadButton] = useState(false);
+  const [uploadButtonTooltip, setUploadButtonTooltip] = useState("");
 
+  useEffect(() => {
+    const checkAadharLink = async () => {
+      try {
+        const response = await axios.post(`${API_URL}/check-user-adhar-link/`, {}, { withCredentials: true });
+        if (response.data.aadhar_present === true) {
+          setUploadButton(true);
+        } else {
+          setUploadButton(false);
+          setUploadButtonTooltip("Please link aadhar to upload documents");
+        }
+      } catch (error) {
+        toast.error("Some error occurred");
+        console.error("Check Aadhar Link Error:", error);
+      }
+    };
+    checkAadharLink();
+  }, [showProfileModal]);
+  
   const navigate = useNavigate();
   const toggleDarkMode = () => {
     toggleTheme();
@@ -80,7 +101,7 @@ const Header = ({ setSearchQuery }) => {
               type="text"
               placeholder="Search documents..."
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`text-sm px-4 py-2 border ${theme === 'dark' ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-800'} focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 w-56 rounded-full w-full`}
+              className={`text-sm px-4 py-2 border ${theme === 'dark' ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white !text-gray-800'} focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 w-56 rounded-full w-full`}
             />
             <button className={`!rounded-full absolute right-2 top-1/2 transform -translate-y-1/2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-xl p-2`}>
               <FaSearch className='hover:scale-110 transition-transform'/>
@@ -89,15 +110,24 @@ const Header = ({ setSearchQuery }) => {
         </div>
 
         {/* Right-aligned Links and Icons */}
-        <div className="flex items-center space-x-1 ml-auto">
-          {/* Upload Link */}
-          <a
-            href="#home"
-            className={`rounded-sm !text-xs md:!text-sm lg:!text-md flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-800 bg-gray-200 hover:bg-gray-300'} !no-underline hover:scale-105 transition-transform duration-200 px-3 py-3 ${isMobile ? 'hidden' : 'block'}`}
+        <div className="flex items-center space-x-1 ml-auto" title={uploadButtonTooltip}>
+          <button
+            disabled={!uploadButton}
+            onClick={() => alert('button clicked')}
+            className={`rounded-sm !text-xs md:!text-sm lg:!text-md flex items-center space-x-2 
+              ${theme === 'dark' 
+                ? 'text-gray-300 bg-gray-700' 
+                : 'text-gray-800 bg-gray-200'} 
+              !no-underline px-3 py-3 
+              ${!uploadButton 
+                ? 'opacity-60' 
+                : 'hover:scale-103 transition-transform duration-200 hover:bg-gray-300 dark:hover:bg-gray-300'} 
+              ${isMobile ? 'hidden' : 'block'}
+            `}
           >
             <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
             <span>Upload</span>
-          </a>
+          </button>
 
           {/* Notifications Icon */}
           <button className={`relative !text-sm md:!text-xl ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-yellow-600 hover:bg-blue-100'} transition-bg duration-200 p-2.5 m-1`}>
@@ -164,13 +194,17 @@ const Header = ({ setSearchQuery }) => {
           </div>
 
           {/* Upload Link */}
-          <a
-            href="#home"
-            className={`text-md flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-800 bg-gray-200 hover:bg-gray-300'} !no-underline hover:scale-105 transition-transform duration-200 px-3 py-2`}
-          >
-            <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
-            <span>Upload</span>
-          </a>
+          <div title={!uploadButton ? uploadButtonTooltip : ''}>
+            <button
+              disabled={!uploadButton}
+              onClick={() => alert('button clicked')}
+              className={`text-md flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-800 bg-gray-200 hover:bg-gray-300'} !no-underline hover:scale-105 transition-transform duration-200 px-3 py-2 
+              ${!uploadButton ? 'cursor-not-allowed opacity-50 blur-[1px]' : ''}`}
+            >
+              <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
+              <span>Upload</span>
+            </button>
+          </div>
         </div>
       )}
       {showProfileModal && <ProfileModal onClose={() => setShowProfileModal(false)} />}
