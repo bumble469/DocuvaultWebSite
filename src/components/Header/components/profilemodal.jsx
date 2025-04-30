@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import dummyimg from '../../../assets/images/docuvaultimage.jpg';
 import { toast } from 'react-toastify';
-
+import editimageicon from "../../../assets/images/editimageicon.png";
+import { useNavigate } from 'react-router-dom';
 const ProfileModal = ({ onClose }) => {
   const [userData, setUserData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -12,28 +13,31 @@ const ProfileModal = ({ onClose }) => {
   const [originalEmail, setOriginEmail] = useState();
   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
   const [otp, setOtp] = useState(''); // Added OTP state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const fetchUserData = async () => {
+    try {
+      const response = await axios.post(`${API_URL}/users/details/`, {}, { withCredentials: true });
+      if (response.data.success === true) {
+        setUserData({
+          full_name: response.data.user.full_name,
+          username: response.data.user.username,
+          email: response.data.user.email,
+          aadhar_number: response.data.user.aadhar_number || '',
+          profile_picture: response.data.user.profile_picture || dummyimg,
+        });
+        setOriginEmail(response.data.user.email);
+      } else {
+        toast.error(`Error during profile update! ${response.data.message}`);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.post("http://localhost:8000/users/details/", {}, { withCredentials: true });
-        if (response.data.success === true) {
-          setUserData({
-            full_name: response.data.user.full_name,
-            username: response.data.user.username,
-            email: response.data.user.email,
-            aadhar_number: response.data.user.aadhar_number || '',
-            profile_picture: response.data.user.profile_picture || dummyimg,
-          });
-          setOriginEmail(response.data.user.email);
-        } else {
-          toast.error(`Error during profile update! ${response.data.message}`);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-  
     fetchUserData();
   }, []);
   
@@ -179,155 +183,209 @@ const ProfileModal = ({ onClose }) => {
     }
   };
 
+  const handleDeleteClick = async(password) => {
+    try{
+      const res1 = await axios.post(`${API_URL}/users/delete/checkpassword/`,{password},{withCredentials:true});
+      if(res1.data.success == true){
+        toast.success("Password verified!");
+        const response = await axios.post(`${API_URL}/users/delete/`,{},{withCredentials:true});
+        if(response.data.success == true){
+          setShowDeleteModal(false);
+          toast.info("Account has been terminated! Thakyou for using our platform :)");
+          onClose();
+          document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
+          navigate("/");
+        }
+        else{
+          toast.error(`Could not terminate accound: ${response.data.message}`);
+        }
+      }else{
+        toast.error(`Error: ${response.data.message}`);
+      }
+    }
+    catch(err){
+      toast.error("Some error occurred! Please try again later", err);
+    }
+  }
+
   return (
-    <div
-      className="fixed inset-0 flex justify-center items-center z-50 p-4"
-      style={{
-        backdropFilter: 'blur(4px)',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      }}
-    >
-      <div className="profile-modal p-6 md:p-8 rounded-md shadow-lg w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
+  <div
+    className="fixed inset-0 flex justify-center items-center z-50 px-4"
+    style={{
+      backdropFilter: 'blur(4px)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    }}
+  >
+    <div className="profile-modal w-lg max-w-3xl max-h-[90vh] overflow-y-auto rounded-md shadow-lg bg-white">
+      <div className="px-4 pt-2 flex justify-end items-center">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-600 hover:text-gray-800 !text-3xl"
+          className="!text-3xl text-gray-600 hover:text-gray-800"
         >
           &times;
         </button>
+      </div>
 
-        <div>
-          <h3 className="text-2xl font-bold text-gray-800">Profile Details</h3>
-          <hr className="border-0 h-[2px] bg-gray-400 rounded my-4" />
+      <div className="p-4 pt-0 flex flex-col items-center" style={{ minHeight: '80%' }}>
+        {/* Profile image and edit button */}
+        <div className="relative flex flex-col items-center -mt-4">
+          <img
+            src={imagePreview || userData.profile_picture}
+            alt="Profile"
+            className="w-32 h-32 rounded-full object-cover border-2 border-gray-300 p-2 transition-transform duration-300 ease-in-out hover:scale-105"
+          />
+          <button
+            title="Change image"
+            className="relative left-10 bottom-10 transition-scale duration-100 hover:scale-105"
+            onClick={() => document.getElementById('fileInput').click()}
+          >
+            <img src={editimageicon} height={35} width={35} />
+          </button>
+          <input
+            type="file"
+            id="fileInput"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+          />
+          <h2 className="text-xl font-semibold text-gray-800">{userData.full_name}</h2>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-          <div className="w-full md:w-[30%] flex flex-col items-center">
-            <div className="relative">
-              <img
-                src={imagePreview || userData.profile_picture}
-                alt="Profile"
-                className="w-32 h-32 md:w-38 md:h-38 rounded-full object-cover border-2 border-gray-300"
-              />
-            </div>
+        <hr className="w-full border-t-2 border-gray-800" />
+
+        {/* Details form and buttons */}
+        <div className="details w-full max-w-md space-y-4">
+          <div className="flex justify-end">
             <button
-              className="mt-4 p-2 bg-gray-400 hover:bg-gray-600 transition-all !rounded-xs text-sm md:text-base"
-              onClick={() => document.getElementById('fileInput').click()}
+              className="edit-details py-2 px-2 text-black bg-gray-100 rounded transition-bg duration-200 hover:!bg-gray-400"
+              onClick={() => setIsEditing(true)}
             >
-              Change Picture
-              <input
-                type="file"
-                id="fileInput"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
+              ✏️ Edit Details
             </button>
           </div>
 
-          <div className="flex flex-col w-full md:w-[70%] space-y-4">
-            <div className="flex justify-center md:justify-end">
-              <button
-                className="px-4 py-2 bg-blue-500 text-white !rounded-xs hover:bg-blue-600 transition-all text-sm md:text-base"
-                onClick={() => setIsEditing(true)}
-              >
-                Edit Details
-              </button>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
-              <label className="text-gray-600 text-sm w-32">Full Name:</label>
-              <input
-                type="text"
-                name="full_name"
-                value={userData.full_name || ''}
-                onChange={handleChange}
-                readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
-              <label className="text-gray-600 text-sm w-32">Username:</label>
-              <input
-                type="text"
-                name="username"
-                value={userData.username || ''}
-                onChange={handleChange}
-                readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
-              <label className="text-gray-600 text-sm w-32">Email:</label>
-              <input
-                type="email"
-                name="email"
-                value={userData.email || ''}
-                onChange={handleChange}
-                readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
-            </div>
-            {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email}</span>}
-
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-4">
-              <label className="text-gray-600 text-sm w-32">Aadhar Number:</label>
-              <div className = "flex flex-col">
-              <label className="text-gray-600 text-xs w-auto">
-                {userData.aadhar_number === "" ? 'Link aadhar to upload documents' : ''}
-              </label>
-              <input
-                type="text"
-                name="aadhar_number"
-                value={userData.aadhar_number || ''}
-                onChange={handleChange}
-                readOnly={!isEditing}
-                className={`border border-gray-300 rounded-md p-2 text-gray-800 flex-1 focus:outline-none focus:ring-2 ${isEditing ? 'bg-white focus:ring-blue-400' : 'bg-gray-300'} text-sm md:text-base`}/>
+          {[{ label: 'Full Name', name: 'full_name' }, { label: 'Username', name: 'username' }, { label: 'Email', name: 'email' }, { label: 'Aadhar Number', name: 'aadhar_number' }]
+            .map(({ label, name }) => (
+              <div key={name}>
+                <label className="block text-gray-600 text-sm mb-2">{label}</label>
+                {name === 'aadhar_number' && userData.aadhar_number === '' && (
+                  <label className="block text-xs text-gray-500 mb-2">
+                    Link Aadhar to upload documents
+                  </label>
+                )}
+                <input
+                  type={name === 'email' ? 'email' : 'text'}
+                  name={name}
+                  value={userData[name] || ''}
+                  onChange={handleChange}
+                  readOnly={!isEditing}
+                  className={`w-full p-2 rounded text-sm focus:outline-none focus:ring-2 ${
+                    isEditing
+                      ? '!border border-gray-400'
+                      : 'bg-transparent !border-gray-600 opacity-40'
+                  }`}
+                />
+                {errors[name] && <p className="text-xs text-red-500 mt-1">{errors[name]}</p>}
               </div>
-            </div>
-            {errors.aadhar_number && (
-              <span className="text-red-500 text-xs mt-1">{errors.aadhar_number}</span>
-            )}
+            ))}
 
-            <div className="flex justify-end !space-x-4 mt-4">
-              <button
-                className="px-4 py-2 bg-gray-400 hover:bg-gray-600 text-white !rounded-xs"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 bg-blue-500 text-white !rounded-xs hover:bg-blue-600"
-                onClick={handleSave}
-                disabled={!isEditing}
-              >
-                Save Changes
-              </button>
-            </div>
+          <hr className="w-full border-t-2 border-gray-800" />
+
+          <div className="flex justify-between !space-x-4">
+            <button
+              className="px-4 py-2 text-red-600 border border-red-600 text-sm transition-bg duration-200 rounded hover:bg-red-100 w-full"
+              onClick={() => {
+                setShowDeleteModal(true);
+                setIsEditing(false);
+              }}
+            >
+              Deactivate Account
+            </button>
+            <button
+              className="cancel-btn px-4 py-2 bg-white-600 text-gray-800 border transition-bg duration-200 hover:!bg-gray-400 text-sm rounded w-full"
+              onClick={()=>{
+                setIsEditing(false)
+                fetchUserData()
+                setErrors({})
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+
+          <button
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white text-sm rounded w-full"
+            onClick={handleSave}
+            disabled={!isEditing}
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* OTP Modal */}
+    {otpVerificationModal && (
+      <div className="fixed inset-0 flex justify-center items-center z-50 p-4">
+        <div className="email_update_otp_modal p-6 rounded-md shadow-lg w-full max-w-md bg-white">
+          <h3 className="text-2xl font-bold">Enter OTP</h3>
+          <input
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            placeholder="Enter OTP"
+            className="border border-gray-300 rounded-md p-2 text-gray-800 w-full mt-4"
+          />
+          <button
+            className="w-full mt-4 py-2 bg-blue-400 hover:bg-blue-500 text-white rounded-md"
+            onClick={handleOtpSubmit}
+          >
+            Verify OTP
+          </button>
+        </div>
+      </div>
+    )}
+    {showDeleteModal && (
+      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+        <div className="delete-account-modal bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+          <h2 className="heading text-lg font-semibold mb-4 text-black">
+            Confirm Deletion
+          </h2>
+          <p className="text text-sm text-black mb-2">
+            Please enter your password to confirm account deletion:
+          </p>
+          <input
+            type="password"
+            className="confirmpassinput w-full border p-2 rounded mb-4 text-sm text-black"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div className="flex justify-end !space-x-2">
+            <button
+              className="delete-account-cancel px-2 py-1 text-sm rounded bg-gray-200 hover:!bg-gray-400 text-gray-800"
+              onClick={()=>{
+                setShowDeleteModal(false);
+                setPassword('');
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={!password}
+              className="p-2 text-red-600 border border-red-600 text-sm transition-bg duration-200 rounded hover:bg-red-100"
+              onClick={() => {
+                handleDeleteClick(password);
+              }}
+            >
+              Confirm
+            </button>
           </div>
         </div>
       </div>
-
-      {/* OTP Modal */}
-      {otpVerificationModal && (
-        <div className="fixed inset-0 flex justify-center items-center z-50 p-4">
-          <div className="email_update_otp_modal p-6 rounded-md shadow-lg w-full max-w-md bg-white">
-            <h3 className="text-2xl font-bold">Enter OTP</h3>
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              placeholder="Enter OTP"
-              className="border border-gray-300 rounded-md p-2 text-gray-800 w-full mt-4"
-            />
-            <button
-              className="w-full mt-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              onClick={handleOtpSubmit}
-            >
-              Verify OTP
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+    )}
+  </div>
   );
 };
 
