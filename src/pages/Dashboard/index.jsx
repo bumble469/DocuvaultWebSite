@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FaShareAlt, FaDownload, FaCog, FaFileAlt, FaCertificate, FaFileSignature, FaIdCard, FaCalendarAlt, FaDollarSign, FaStethoscope, FaBuilding, FaClipboardList } from 'react-icons/fa';
 import DocumentModal from './components/document_model';
+import Lottie from 'lottie-react';
+import documentLinkingAnimation from '../../assets/images/dashboardimg.json';
 import { useMediaQuery } from 'react-responsive';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-
 const documents = {
   "Unique Identification & Identity Proofs": [
     { id: 1, name: 'Aadhaar Card', type: 'Unique Identification & Identity Proofs' },
@@ -61,7 +62,7 @@ const documents = {
   ],
 };
 
-const Dashboard = ({ searchQuery }) => {
+const Dashboard = ({ searchQuery, showProfileModal }) => {
   const [selectedTypes, setSelectedTypes] = useState([]); // Stores selected document types
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentDoc, setCurrentDoc] = useState(null);
@@ -84,7 +85,7 @@ const Dashboard = ({ searchQuery }) => {
       }
     };
     checkAadharLink();
-  }, []);
+  }, [showProfileModal]);
 
   const openModal = (doc) => {
     setCurrentDoc(doc);
@@ -205,13 +206,22 @@ const Dashboard = ({ searchQuery }) => {
         </div>
         </>
       )}
-      <div>
+      <>
         {!aadharPresent && (
-          <>
-          <p className='text-red-500'>Please link your aadhar!</p>
-          </>
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center">
+          <Lottie
+            className="h-50"
+            animationData={documentLinkingAnimation}
+            loop
+            autoplay
+          />
+          <p className="text-red-500 mt-4">
+            Please link your Aadhar in the profile menu!
+          </p>
+        </div>        
         )}
-      </div>
+      </>
+
       <DocumentModal isOpen={isModalOpen} closeModal={closeModal} document={currentDoc} />
     </div>
   );
