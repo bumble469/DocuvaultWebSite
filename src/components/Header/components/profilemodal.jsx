@@ -4,6 +4,7 @@ import dummyimg from "../../../assets/images/dummyimg.png"
 import { toast } from 'react-toastify';
 import editimageicon from "../../../assets/images/editimageicon.png";
 import { useNavigate } from 'react-router-dom';
+
 const ProfileModal = ({ onClose }) => {
   const [userData, setUserData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
@@ -11,7 +12,7 @@ const ProfileModal = ({ onClose }) => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [originalEmail, setOriginEmail] = useState();
   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
-  const [otp, setOtp] = useState(''); // Added OTP state
+  const [otp, setOtp] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -195,7 +196,6 @@ const ProfileModal = ({ onClose }) => {
           setShowDeleteModal(false);
           setPassword('')
           toast.info("Account has been terminated! Thakyou for using our platform :)");
-          document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
           navigate("/");
         }
         else{

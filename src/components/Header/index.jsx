@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ProfileModal from './components/profilemodal.jsx';
+import UploadDocumentModal from './components/uploadmodal.jsx';
 
 const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -21,6 +22,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [uploadButton, setUploadButton] = useState(false);
   const [uploadButtonTooltip, setUploadButtonTooltip] = useState("");
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     const checkAadharLink = async () => {
@@ -65,7 +67,6 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
     try {
       const response = await axios.post('http://localhost:8000/users/logout/', {}, { withCredentials: true });
       if (response.data.success) {
-        document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
         navigate('/');
         toast.success('Logout successful! Redirecting to login page...');
       } else {
@@ -111,23 +112,23 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
         {/* Right-aligned Links and Icons */}
         <div className="flex items-center space-x-1 ml-auto">
           <span title={uploadButtonTooltip}>
-          <button
-            disabled={!uploadButton}
-            onClick={() => alert('button clicked')}
-            className={`rounded-sm !text-xs md:!text-sm lg:!text-md flex items-center space-x-2 
-              ${theme === 'dark' 
-                ? 'text-gray-300 bg-gray-700' 
-                : 'text-gray-800 bg-gray-200'} 
-              !no-underline px-3 py-3 
-              ${!uploadButton 
-                ? 'opacity-60' 
-                : 'hover:scale-103 transition-transform duration-200 hover:bg-gray-300 dark:hover:bg-gray-300'} 
-              ${isMobile ? 'hidden' : 'block'}
-            `}
-          >
-            <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
-            <span>Upload</span>
-          </button>
+            <button
+              disabled={!uploadButton}
+              onClick={() => setShowUploadModal(true)}
+              className={`rounded-sm !text-xs md:!text-sm lg:!text-md flex items-center space-x-2 
+                ${theme === 'dark' 
+                  ? 'text-gray-300 bg-gray-700' 
+                  : 'text-gray-800 bg-gray-200'} 
+                !no-underline px-3 py-3 
+                ${!uploadButton 
+                  ? 'opacity-60' 
+                  : 'hover:scale-103 transition-transform duration-200 hover:bg-gray-300 dark:hover:bg-gray-300'} 
+                ${isMobile ? 'hidden' : 'block'}
+              `}
+            >
+              <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
+              <span>Upload</span>
+            </button>
           </span>
 
           {/* Notifications Icon */}
@@ -213,6 +214,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
         </div>
       )}
       {showProfileModal && <ProfileModal onClose={() => setShowProfileModal(false)} />}
+      {showUploadModal && <UploadDocumentModal onClose={() => setShowUploadModal(false)} />}
       {showLogoutDialog && (
          <div className="fixed inset-0 flex justify-center items-center z-50"
          style={{
