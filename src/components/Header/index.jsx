@@ -12,12 +12,11 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ProfileModal from './components/profilemodal.jsx';
 
-const Header = ({ setSearchQuery }) => {
+const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
   const [userImage, setUserImage] = useState();
   const API_URL = import.meta.env.VITE_API_URL;
   const [uploadButton, setUploadButton] = useState(false);
@@ -110,7 +109,8 @@ const Header = ({ setSearchQuery }) => {
         </div>
 
         {/* Right-aligned Links and Icons */}
-        <div className="flex items-center space-x-1 ml-auto" title={uploadButtonTooltip}>
+        <div className="flex items-center space-x-1 ml-auto">
+          <span title={uploadButtonTooltip}>
           <button
             disabled={!uploadButton}
             onClick={() => alert('button clicked')}
@@ -128,6 +128,7 @@ const Header = ({ setSearchQuery }) => {
             <FaUpload className={`${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'} text-xl`} />
             <span>Upload</span>
           </button>
+          </span>
 
           {/* Notifications Icon */}
           <button className={`relative !text-sm md:!text-xl ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-yellow-600 hover:bg-blue-100'} transition-bg duration-200 p-2.5 m-1`}>
@@ -149,11 +150,15 @@ const Header = ({ setSearchQuery }) => {
             className="flex items-center justify-center rounded-full overflow-hidden p-1 m-1 hover:bg-blue-100 transition-bg duration-200"
             style={{ height: '50px', width: '50px' }}
           >
-            <img 
+           {userImage ? (
+              <img 
               src={userImage} 
               alt="Profile" 
               className="object-cover w-full h-full rounded-full"
             />
+           ):(
+            <FaUser className="object-cover rounded-full h-8 w-8"/>
+           )}
           </button>
         </div>
         {showProfileDropdown && (
@@ -211,8 +216,8 @@ const Header = ({ setSearchQuery }) => {
       {showLogoutDialog && (
          <div className="fixed inset-0 flex justify-center items-center z-50"
          style={{
-           backdropFilter: 'blur(1px)', // This applies the blur effect to the background
-           backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent dark overlay
+           backdropFilter: 'blur(1px)', 
+           backgroundColor: 'rgba(0, 0, 0, 0.5)', 
          }}>
           <div className="confirm-logout-dialog p-6 rounded-lg shadow-lg max-w-sm w-full">
             <h3 className="!text-2xl font-semibold 0 mb-4">Are you sure you want to logout?</h3>

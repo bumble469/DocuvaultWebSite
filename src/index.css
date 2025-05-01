@@ -47,45 +47,22 @@ body.light .profile-modal input{
 }
 
 body.dark .profile-modal{
-  background-color: rgb(36, 36, 36); /* Dark mode background */
-  color: rgb(221, 221, 221); /* Dark mode text */
+  background-color: rgb(36, 36, 36); 
+  color: rgb(221, 221, 221); 
 }
 
 body.dark .profile-modal input{
-  color: rgb(202, 202, 202); /* Light mode text */
+  color: rgb(202, 202, 202); 
   border: 1px solid white
 }
 body.light .profile-modal input{
   color:black;
   border:1px solid black !important
 }
-/* For webkit-based browsers (Chrome, Safari, etc.) */
 body ::-webkit-scrollbar {
-  width: 8px; /* Adjust the width of the scrollbar */
+  width: 8px; 
 }
 
-body ::-webkit-scrollbar-track {
-  background: transparent; /* Remove the scrollbar track background */
-}
-
-body ::-webkit-scrollbar-thumb {
-  background-color: #555; /* Dark thumb for dark mode */
-  border-radius: 10px; /* Optional: makes the thumb rounded */
-}
-
-body.dark ::-webkit-scrollbar-thumb {
-  background-color: #aaa; /* Lighter thumb for dark mode */
-}
-
-/* For Firefox */
-body {
-  scrollbar-width: thin; /* Makes the scrollbar thinner */
-  scrollbar-color: #555 transparent; /* Dark thumb with transparent background */
-}
-
-body.dark {
-  scrollbar-color: #aaa transparent; /* Lighter thumb for dark mode */
-}
 body.light .auth label, input{
   color:black!important
 }
@@ -158,3 +135,14 @@ body.dark .delete-account-modal .delete-account-cancel{
   color: white !important;
 }
   
+body ::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+body ::-webkit-scrollbar-thumb {
+  background-color: rgb(185, 185, 185);
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+  background-color: rgb(81, 81, 81);
+}

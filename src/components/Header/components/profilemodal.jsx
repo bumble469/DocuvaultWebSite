@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import dummyimg from '../../../assets/images/docuvaultimage.jpg';
+import dummyimg from "../../../assets/images/dummyimg.png"
 import { toast } from 'react-toastify';
 import editimageicon from "../../../assets/images/editimageicon.png";
 import { useNavigate } from 'react-router-dom';
@@ -9,13 +9,13 @@ const ProfileModal = ({ onClose }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({ email: '', aadhar_number: '' });
   const API_URL = import.meta.env.VITE_API_URL;
-  const [imagePreview, setImagePreview] = useState(null);
   const [originalEmail, setOriginEmail] = useState();
   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
   const [otp, setOtp] = useState(''); // Added OTP state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const [isAadharLinked, setIsAadharLinked] = useState(false);
 
   const fetchUserData = async () => {
     try {
@@ -25,10 +25,13 @@ const ProfileModal = ({ onClose }) => {
           full_name: response.data.user.full_name,
           username: response.data.user.username,
           email: response.data.user.email,
-          aadhar_number: response.data.user.aadhar_number || '',
-          profile_picture: response.data.user.profile_picture || dummyimg,
+          aadhar_number: response.data.user.aadhar_number,
+          profile_picture: response.data.user.profile_picture,
         });
         setOriginEmail(response.data.user.email);
+        if(response.data.user.aadhar_number !== null){
+          setIsAadharLinked(true);
+        }
       } else {
         toast.error(`Error during profile update! ${response.data.message}`);
       }
@@ -187,12 +190,11 @@ const ProfileModal = ({ onClose }) => {
     try{
       const res1 = await axios.post(`${API_URL}/users/delete/checkpassword/`,{password},{withCredentials:true});
       if(res1.data.success == true){
-        toast.success("Password verified!");
         const response = await axios.post(`${API_URL}/users/delete/`,{},{withCredentials:true});
         if(response.data.success == true){
           setShowDeleteModal(false);
+          setPassword('')
           toast.info("Account has been terminated! Thakyou for using our platform :)");
-          onClose();
           document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
           navigate("/");
         }
@@ -204,7 +206,7 @@ const ProfileModal = ({ onClose }) => {
       }
     }
     catch(err){
-      toast.error("Some error occurred! Please try again later", err);
+      console.log(err);
     }
   }
 
@@ -229,11 +231,19 @@ const ProfileModal = ({ onClose }) => {
       <div className="p-4 pt-0 flex flex-col items-center" style={{ minHeight: '80%' }}>
         {/* Profile image and edit button */}
         <div className="relative flex flex-col items-center -mt-4">
-          <img
-            src={imagePreview || userData.profile_picture}
+          {userData.profile_picture ? (
+            <img
+            src={userData.profile_picture}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-2 border-gray-300 p-2 transition-transform duration-300 ease-in-out hover:scale-105"
           />
+          ):(
+            <img
+            src={dummyimg}
+            alt="Profile"
+            className="w-32 h-32 rounded-full object-cover border-2 border-gray-300 p-2 transition-transform duration-300 ease-in-out hover:scale-105"
+          />
+          )}
           <button
             title="Change image"
             className="relative left-10 bottom-10 transition-scale duration-100 hover:scale-105"
@@ -267,11 +277,13 @@ const ProfileModal = ({ onClose }) => {
           {[{ label: 'Full Name', name: 'full_name' }, { label: 'Username', name: 'username' }, { label: 'Email', name: 'email' }, { label: 'Aadhar Number', name: 'aadhar_number' }]
             .map(({ label, name }) => (
               <div key={name}>
-                <label className="block text-gray-600 text-sm mb-2">{label}</label>
-                {name === 'aadhar_number' && userData.aadhar_number === '' && (
-                  <label className="block text-xs text-gray-500 mb-2">
-                    Link Aadhar to upload documents
-                  </label>
+                <label className="block text-gray-600 text-sm">{label}</label>
+                {name === 'aadhar_number' && userData.aadhar_number === null && (
+                  <div>
+                    <label className="block text-xs font-bold !text-yellow-600 mb-2">
+                    Link Aadhar to upload documents!
+                    </label>
+                  </div>
                 )}
                 <input
                   type={name === 'email' ? 'email' : 'text'}
@@ -279,11 +291,12 @@ const ProfileModal = ({ onClose }) => {
                   value={userData[name] || ''}
                   onChange={handleChange}
                   readOnly={!isEditing}
+                  disabled={name==='aadhar_number' && isAadharLinked}
                   className={`w-full p-2 rounded text-sm focus:outline-none focus:ring-2 ${
                     isEditing
                       ? '!border border-gray-400'
                       : 'bg-transparent !border-gray-600 opacity-40'
-                  }`}
+                  } ${name == 'aadhar_number' && isAadharLinked ? 'cursor-not-allowed opacity-60' : ''}`}
                 />
                 {errors[name] && <p className="text-xs text-red-500 mt-1">{errors[name]}</p>}
               </div>
