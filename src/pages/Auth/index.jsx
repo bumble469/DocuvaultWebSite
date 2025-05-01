@@ -128,7 +128,6 @@ const Auth = () => {
           if (response.data.success) {
             toast.success('Login successful! 🎉');
             const token = response.data.access_token;
-            document.cookie = `access_token=${token}; path=/; HttpOnly; Secure`;
             setIsLoading(false);
             setFormData(prev => ({ ...prev, fullName: '', email: '', username: '', password: '', confirmPassword: '' }));
             navigate('/dashboard');
