@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaShareAlt, FaDownload, FaTrash } from 'react-icons/fa'; // Import FaTrash for delete icon
+import { FaShareAlt, FaDownload, FaTrash } from 'react-icons/fa';
 import DocumentModal from './components/document_model';
 import { useMediaQuery } from 'react-responsive';
 import { toast } from 'react-toastify';
@@ -166,7 +166,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
             ) : (
               <div className="dashboard-filters space-y-3">
                 {documentTypes.map((type) => (
-                  <div key={type} className="flex items-center space-x-3">
+                  <div key={type} className="dashboard-filters-mapped flex items-center space-x-3 bg-gray-100 rounded-sm p-2 hover:shadow-md transition duration-200">
                     <input
                       type="checkbox"
                       id={type}
@@ -189,27 +189,31 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                 : filteredDocuments.flatMap((doc) =>
                     filterDocuments([doc], searchQuery).map((doc) => (
                       <div className="pb-3 document-item hover:scale-102 transition-scale duration-200 mb-4 border rounded-lg shadow-sm hover:shadow-xl transition duration-300">
-                        <div className="document-preview mb-2 relative">
+                        <div className="document-preview mb-2 relative cursor-pointer" title={`open ${doc.document_name}`} onClick={() => openModal(doc)}>
                           <div className="absolute -top-1 -left-1 rounded-bl-lg text-white">
-                            {doc.document_extension === "pdf" && <span className="bg-red-500 p-2 rounded">{`PDF`}</span>}
-                            {doc.document_extension === "pptx" && <span className="bg-orange-600 p-2 rounded">{`PPT`}</span>}
-                            {["png", "jpg", "webp"].includes(doc.document_extension) && <span className="bg-blue-400 p-2 rounded">{`Image`}</span>}
-                            {(doc.document_extension === "docx" || doc.document_extension === "doc") && <span className="bg-blue-500 p-2 rounded">{`Doc`}</span>}
-                            {["xlsx", "xls"].includes(doc.document_extension) && <span className="bg-green-600 p-2 rounded">{`Excel`}</span>}
-                            {doc.document_extension === "txt" && <span className="bg-gray-500 p-2 rounded">{`TXT`}</span>}
+                            {doc.document_extension === "pdf" && <span className="bg-red-500 p-2 rounded">{doc.document_extension}</span>}
+                            {doc.document_extension === "pptx" && <span className="bg-orange-600 p-2 rounded">{doc.document_extension}</span>}
+                            {["png", "jpg", "webp"].includes(doc.document_extension) && <span className="bg-blue-400 p-2 rounded">{doc.document_extension}</span>}
+                            {(doc.document_extension === "docx" || doc.document_extension === "doc") && <span className="bg-blue-500 p-2 rounded">{doc.document_extension}</span>}
+                            {["xlsx", "xls", "csv"].includes(doc.document_extension) && <span className="bg-green-600 p-2 rounded">{doc.document_extension}</span>}
+                            {doc.document_extension === "txt" && <span className="bg-gray-500 p-2 rounded">{doc.document_extension}</span>}
                           </div>
 
                           <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
                         </div>
 
-                        <div className="document-info text-center">
-                          <span className="font-medium">{doc.document_name}</span>
-                          <div className="action-icons flex justify-center space-x-4 mt-2">
-                            <FaShareAlt className="text-xl cursor-pointer text-blue-500 hover:scale-125 transition duration-200" title="Share" />
+                        <div className="document-info text-center max-w-full overflow-hidden p-2">
+                          <span className="font-medium break-words">{doc.document_name}</span>
+
+                          <div className="action-icons flex justify-center items-center space-x-4 mt-2 overflow-x-auto">
+                            <FaShareAlt
+                              className="text-xl cursor-pointer text-blue-500 hover:scale-125 transition duration-200"
+                              title="Share"
+                            />
                             <FaDownload
                               className="text-xl cursor-pointer text-green-500 hover:scale-125 transition duration-200"
                               title="Download"
-                              onClick={() => handleDownload(doc)} 
+                              onClick={() => handleDownload(doc)}
                             />
                             <FaTrash
                               className="text-xl cursor-pointer text-red-500 hover:scale-125 transition duration-200"
@@ -219,7 +223,6 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                                 setShowConfirmDeleteModal(true);
                               }}
                             />
-
                           </div>
                         </div>
                       </div>

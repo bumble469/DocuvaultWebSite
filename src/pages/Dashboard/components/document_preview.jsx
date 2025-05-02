@@ -1,15 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
 import pptxiconpreview from "../../../assets/images/pptxiconpreview.png";
-
 let isScriptLoaded = false;
 
 const FilePreview = ({ base64String, fileType }) => {
   const [docContent, setDocContent] = useState('');
   const [excelContent, setExcelContent] = useState(null);
   const [txtContent, setTxtContent] = useState('');
-  const canvasRef = useRef(null);
+  const [pdfImage, setPdfImage] = useState(null);
 
   const handleDocx = (base64String) => {
     const binaryString = atob(base64String);
@@ -51,7 +50,7 @@ const FilePreview = ({ base64String, fileType }) => {
         resolve();
         return;
       }
-
+  
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
       script.onload = () => {
@@ -63,50 +62,53 @@ const FilePreview = ({ base64String, fileType }) => {
     }).then(() => {
       const pdfData = atob(base64String);
       const loadingTask = window.pdfjsLib.getDocument({ data: pdfData });
-
+  
       loadingTask.promise.then(pdf => {
         pdf.getPage(1).then(page => {
           const scale = 1.5;
           const viewport = page.getViewport({ scale });
-          const canvas = canvasRef.current;
-          const context = canvas.getContext('2d');
-
-          context.clearRect(0, 0, canvas.width, canvas.height);
-
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-
+  
+          const tempCanvas = document.createElement('canvas');
+          const context = tempCanvas.getContext('2d');
+  
+          tempCanvas.width = viewport.width;
+          tempCanvas.height = viewport.height;
+  
           page.render({
             canvasContext: context,
             viewport: viewport
+          }).promise.then(() => {
+            const imageUrl = tempCanvas.toDataURL();
+            setPdfImage(imageUrl); 
           });
         });
       });
     });
   };
+  
 
   useEffect(() => {
+    console.log("File type received:", fileType);
     if (fileType === "docx") {
       handleDocx(base64String);
     } else if (fileType === "pdf") {
       loadPdfJs();
-    } else if (fileType === "xlsx") {
+    } else if (fileType === "xlsx" || fileType === "xls" || fileType == "csv") {
       handleXlsx(base64String);
     } else if (fileType === "txt") {
       const decoded = atob(base64String);
       setTxtContent(decoded);
     }
   }, [base64String, fileType]);
+  
 
   return (
     <>
-      {fileType === "pdf" && (
-        <iframe
-            src={`data:application/pdf;base64,${base64String}#toolbar=0&scrollbar=0`}
-            className="h-40 md:h-70 w-full object-cover rounded-lg"
-            title="PDF Preview"
-            scrolling="no"
-            style={{overflow:'hidden' }}
+      {fileType === "pdf" && pdfImage && (
+        <img
+          src={pdfImage}
+          alt="PDF Preview"
+          className="h-40 md:h-70 w-full object-cover rounded-lg"
         />
       )}
 
@@ -120,14 +122,14 @@ const FilePreview = ({ base64String, fileType }) => {
 
       {(fileType === "docx" || fileType === "doc") && (
         <div
-          className="doc-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4"
+          className="doc-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
           dangerouslySetInnerHTML={{ __html: docContent }}
         />
       )}
 
-      {(fileType === "xlsx" || fileType === "xls") && excelContent && (
+      {(fileType === "xlsx" || fileType === "xls" || fileType === "csv") && excelContent && (
         <div
-          className="xlsx-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4"
+          className="xlsx-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
           dangerouslySetInnerHTML={{ __html: excelContent }}
         />
       )}
@@ -143,7 +145,7 @@ const FilePreview = ({ base64String, fileType }) => {
       )}
 
       {fileType === "txt" && (
-        <div className=" h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4">
+        <div className="txt-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white">
           {txtContent}
         </div>
       )}
