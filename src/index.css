@@ -176,3 +176,27 @@ body.dark .upload-doc-modal .option-list{
   color: white !important;
   background-color:rgb(37, 37, 37) !important;
 }
+
+body.dark .txt-preview, .xlsx-preview, .doc-preview{
+  color: rgb(0,0,0) !important;
+}
+
+body.dark .document-large-preview{
+  background-color: rgb(54, 54, 54) !important;
+  color: white !important;
+}
+body.dark .document-large-preview h4{
+  color:white ;
+}
+body.dark .document-large-preview-tables .l1{
+  background:rgb(43, 43, 43);
+  color: white ;
+}
+
+body.dark .dashboard-filters-mapped{
+  background: rgb(39, 39, 39);
+}
+body.dark .dashboard-filters-mapped:hover{
+  background: rgb(23, 23, 23);
+  box-shadow: 0px 2px 3px rgba(209, 209, 209, 0.18); 
+}
