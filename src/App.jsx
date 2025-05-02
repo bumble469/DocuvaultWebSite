@@ -22,14 +22,15 @@ const AppContent = () => {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showProfileModal, setShowProfileModal] = useState(false);
-
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  
   return(
     <>
-      {location.pathname !== '/' && <Header setSearchQuery={setSearchQuery} showProfileModal={showProfileModal} setShowProfileModal={setShowProfileModal} /> }
+      {location.pathname !== '/' && <Header setSearchQuery={setSearchQuery} showProfileModal={showProfileModal} setShowProfileModal={setShowProfileModal} showUploadModal={showUploadModal} setShowUploadModal={setShowUploadModal} /> }
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Auth />} />
-        <Route path="/dashboard" element={<Dashboard searchQuery={searchQuery} showProfileModal={showProfileModal} />} />
+        <Route path="/dashboard" element={<Dashboard searchQuery={searchQuery} showProfileModal={showProfileModal} showUploadModal={showUploadModal} />} />
       </Routes>
     </>
   )

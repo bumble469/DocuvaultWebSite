@@ -62,8 +62,13 @@ const UploadDocumentModal = ({ onClose }) => {
           toast.error(`Failed to upload document! ${response.data.message}`);
         }
       } catch (err) {
-        toast.error("Upload failed. Please try again.");
-        console.error(err);
+        if (err.response && err.response.data) {
+          toast.error(`Upload failed: ${err.response.data.detail}`);
+          console.error('Error details:', err.response.data);
+        } else {
+          toast.error("Upload failed. Please try again.");
+          console.error(err);
+        }
       } finally {
         setIsUploading(false);
       }
@@ -106,13 +111,13 @@ const UploadDocumentModal = ({ onClose }) => {
 
         {/* Drag-and-Drop Area */}
         <div
-          className="flex pb-4 flex-col items-center justify-center border-2 border-dashed rounded hover:border-blue-400 hover:bg-blue-100 transition-all duration-200 w-full min-h-[220px] cursor-pointer text-center"
+          className="drag-drop-area flex pb-4 flex-col items-center justify-center border-2 border-dashed rounded hover:border-blue-400 hover:bg-blue-100 transition-all duration-200 w-full min-h-[220px] cursor-pointer text-center"
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
         >
           <label htmlFor="fileUpload" className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
             <Lottie animationData={docuploadanimation} loop autoplay className="h-32" />
-            <p className="text-black">Drag and drop files here</p>
+            <p className="text-black drag-drop-text">Drag and drop files here</p>
             <span className="mt-2 px-3 py-1 bg-white border rounded text-black text-sm font-bold">
               Select File
             </span>
@@ -143,7 +148,7 @@ const UploadDocumentModal = ({ onClose }) => {
           >
             <option value="" disabled>Select category</option>
             {categoryOptions.map((option, index) => (
-              <option key={index} value={option}>
+              <option className="option-list bg-gray-100 text-black" key={index} value={option}>
                 {option}
               </option>
             ))}

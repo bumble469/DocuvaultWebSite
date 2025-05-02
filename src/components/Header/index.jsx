@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import ProfileModal from './components/profilemodal.jsx';
 import UploadDocumentModal from './components/uploadmodal.jsx';
 
-const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
+const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUploadModal, setShowUploadModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -22,7 +22,6 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal }) => {
   const API_URL = import.meta.env.VITE_API_URL;
   const [uploadButton, setUploadButton] = useState(false);
   const [uploadButtonTooltip, setUploadButtonTooltip] = useState("");
-  const [showUploadModal, setShowUploadModal] = useState(false);
 
   useEffect(() => {
     const checkAadharLink = async () => {
