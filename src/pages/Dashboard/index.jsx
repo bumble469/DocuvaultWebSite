@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaShareAlt, FaDownload, FaTrash } from 'react-icons/fa';
+import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import DocumentModal from './components/document_model';
+import noaadharlinkimage from '../../assets/images/dashboardimg.json';
 import { useMediaQuery } from 'react-responsive';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import FilePreview from './components/document_preview';
+import LazyLoad from 'react-lazyload';
+import Lottie from 'lottie-react';
 
 const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -16,6 +19,8 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [documents, setDocuments] = useState([]);
   const [showDeleteConfirmModal, setShowConfirmDeleteModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const documentTypes = [
     "Unique Identification & Identity Proofs",
@@ -145,6 +150,19 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     }
   };
 
+  const currentDocuments = filteredDocuments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  
+  const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="dashboard flex flex-col md:flex-row p-6">
       {aadharPresent ? (
@@ -182,11 +200,33 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
           </div>
 
           <div className="right-section flex-1 ml-0 md:ml-6 max-h-[80vh] overflow-y-auto p-2">
-            <h4 className="text-lg !font-bold !mb-6">DOCUMENTS</h4>
+            <div className='flex flex-row mb-4 justify-between'>
+              <h4 className="text-lg !font-bold">DOCUMENTS</h4>
+              <div className="pagination flex justify-end">
+                <button 
+                  onClick={() => handlePageChange(currentPage - 1)} 
+                  disabled={currentPage === 1}
+                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md mx-1 flex items-center transition-all duration-200"
+                >
+                  <FaChevronLeft className="icon text-gray-800" /> 
+                </button>
+                <p className="flex items-center text-gray-800 font-bold m-2">
+                  {currentPage}/{totalPages}
+                </p>
+                <button 
+                  onClick={() => handlePageChange(currentPage + 1)} 
+                  disabled={currentPage === totalPages}
+                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md mx-1 flex items-center transition-all duration-200"
+                >
+                  <FaChevronRight className="icon text-gray-800" /> 
+                </button>
+              </div>
+            </div>
+
             <div className="documents-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDocuments.length === 0
+              {currentDocuments.length === 0
                 ? <p>No documents available.</p>
-                : filteredDocuments.flatMap((doc) =>
+                : currentDocuments.flatMap((doc) =>
                     filterDocuments([doc], searchQuery).map((doc) => (
                       <div className="pb-3 document-item hover:scale-102 transition-scale duration-200 mb-4 border rounded-lg shadow-sm hover:shadow-xl transition duration-300">
                         <div className="document-preview mb-2 relative cursor-pointer" title={`open ${doc.document_name}`} onClick={() => openModal(doc)}>
@@ -199,24 +239,26 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                             {doc.document_extension === "txt" && <span className="bg-gray-500 p-2 rounded">{doc.document_extension}</span>}
                           </div>
 
-                          <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
+                          <LazyLoad height={200} offset={100}>
+                            <FilePreview base64String={doc.upload_data} fileType={doc.document_extension}/>
+                          </LazyLoad>
                         </div>
 
-                        <div className="document-info text-center max-w-full overflow-hidden p-2">
+                        <div className="document-info text-center max-w-full overflow-hidden pt-4">
                           <span className="font-medium break-words">{doc.document_name}</span>
 
-                          <div className="action-icons flex justify-center items-center space-x-4 mt-2 overflow-x-auto">
+                          <div className="action-icons flex justify-center items-center space-x-4 my-2 overflow-x-auto">
                             <FaShareAlt
-                              className="text-xl cursor-pointer text-blue-500 hover:scale-125 transition duration-200"
+                              className="text-xl cursor-pointer text-blue-500 hover:text-blue-800 transition duration-200"
                               title="Share"
                             />
                             <FaDownload
-                              className="text-xl cursor-pointer text-green-500 hover:scale-125 transition duration-200"
+                              className="text-xl cursor-pointer text-green-500 hover:text-green-800 transition duration-200"
                               title="Download"
                               onClick={() => handleDownload(doc)}
                             />
                             <FaTrash
-                              className="text-xl cursor-pointer text-red-500 hover:scale-125 transition duration-200"
+                              className="text-xl cursor-pointer text-red-500 hover:text-red-800 transition duration-200"
                               title="Delete"
                               onClick={() => {
                                 setDocToDelete(doc);
@@ -234,6 +276,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
       ) : (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center">
           <p className="text-red-500 mt-4">Please link your Aadhar in the profile menu!</p>
+          <Lottie animationData={noaadharlinkimage}/>
         </div>
       )}
 

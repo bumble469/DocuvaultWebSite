@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
-import PptxGenJS from 'pptxgenjs';
+import Lottie from 'lottie-react'
+import fileloading from '../../../assets/images/filepreviewloading.json'
 
 const DocumentModal = ({ doc, closeModal }) => {
   const [documentContent, setDocumentContent] = useState('');
   const [isError, setIsError] = useState(false);
   const [isOfficeFile, setIsOfficeFile] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   if (!doc) return null;
 
@@ -21,12 +23,11 @@ const DocumentModal = ({ doc, closeModal }) => {
   };
 
   useEffect(() => {
-    if (!doc || !doc.upload_data) return; // Early exit if doc or document_data is missing
-
-    const fileBuffer = decodeBase64(doc.upload_data); // Get the binary data for the document
-
+    if (!doc || !doc.upload_data) return;
+      
+    const fileBuffer = decodeBase64(doc.upload_data);
+  
     if (doc.document_extension === 'docx') {
-      // Convert DOCX to HTML using Mammoth
       mammoth.convertToHtml({ arrayBuffer: fileBuffer })
         .then(result => {
           setDocumentContent(result.value);
@@ -35,20 +36,21 @@ const DocumentModal = ({ doc, closeModal }) => {
         .catch(() => {
           setIsError(true);
           setDocumentContent('Error processing DOCX file.');
+        })
+        .finally(() => {
+          setLoading(false); // Set loading to false when done
         });
     } else if (doc.document_extension === 'xlsx' || doc.document_extension === 'xls' || doc.document_extension === 'csv') {
-      // Convert Excel to HTML using XLSX
       try {
         const workbook = XLSX.read(fileBuffer, { type: 'array' });
         const sheetNames = workbook.SheetNames;
         const sheetData = sheetNames.map((sheetName) => {
           const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // Read as a 2D array (rows and columns)
-          const html = generateTable(rows); // Use the 2D array to create a table
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          const html = generateTable(rows);
           return { sheetName, html };
         });
-
-        // Organize sheets into structured HTML for each sheet
+  
         const organizedHtml = sheetData.map((sheet) => {
           return `
             <div class="sheet-container">
@@ -57,22 +59,26 @@ const DocumentModal = ({ doc, closeModal }) => {
             </div>
           `;
         }).join('');
-
+  
         setDocumentContent(organizedHtml);
         setIsOfficeFile(true);
       } catch (error) {
         setIsError(true);
-        setDocumentContent('Error processing Excel/CSV file.');
+        setDocumentContent('Error processing file.');
+      } finally {
+        setLoading(false); // Set loading to false when done
       }
     } else if (doc.document_extension === 'pptx') {
-      // PowerPoint file handling (extract text and basic info, you could also render slides as images)
       setDocumentContent(`<iframe src="https://docs.google.com/gview?url=http://localhost:8000/preview-document/${doc.document_name}&embedded=true" width="100%" height="100%" frameborder="0"></iframe>`);
       setIsOfficeFile(true);
+      setLoading(false); // Set loading to false after setting content
     } else {
       setIsError(true);
       setDocumentContent('Unsupported file type.');
+      setLoading(false); // Set loading to false for unsupported file types
     }
   }, [doc]);
+  
 
   const generateTable = (rows) => {
     let tableHtml = '<table class="document-large-preview-tables table-auto w-full border-collapse border border-gray-300">';
@@ -106,30 +112,32 @@ const DocumentModal = ({ doc, closeModal }) => {
         </button>
 
         {/* Optional Title */}
-        <h4 className="px-6 pt-6 pb-4 border-b text-xl font-semibold text-gray-800">
-          Document Preview
-        </h4>
+        <div>
+          <h4 className="px-6 pt-6 pb-4 border-b text-xl font-semibold text-gray-800">
+            {!loading ? 'Content Viewer' : 'Loading content...'}
+          </h4>
+        </div>
 
         {/* Object viewer with scrollable container */}
-        <div className="p-4 overflow-auto flex-1">
-          {isOfficeFile ? (
-            <div 
-              className='w-full h-[70vh]'
-              dangerouslySetInnerHTML={{ __html: documentContent }} 
-            />
-          ) : (
-            <object
-              data={`http://localhost:8000/preview-document/${doc.document_name}`}
-              type="application/pdf"
-              width="100%"
-              height="100%"
-              className="w-full h-[70vh] rounded border border-gray-300"
-            >
-              <p>Your browser does not support inline PDFs. You can download the file <a href={`http://localhost:8000/preview-document/${doc.document_name}`}>here</a>.</p>
-            </object>
-          )}
+          <div className="p-4 overflow-auto flex-1">
+            {isOfficeFile ? (
+              <div 
+                className='w-full h-[70vh]'
+                dangerouslySetInnerHTML={{ __html: documentContent }} 
+              />
+            ) : (
+              <object
+                data={`http://localhost:8000/preview-document/${doc.document_name}`}
+                type="application/pdf"
+                width="100%"
+                height="100%"
+                className="w-full h-[70vh] rounded border border-gray-300"
+              >
+                <p>Your browser does not support inline PDFs. You can download the file <a href={`http://localhost:8000/preview-document/${doc.document_name}`}>here</a>.</p>
+              </object>
+            )}
+          </div>
         </div>
-      </div>
     </div>
   );
 };

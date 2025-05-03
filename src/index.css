@@ -200,3 +200,16 @@ body.dark .dashboard-filters-mapped:hover{
   background: rgb(23, 23, 23);
   box-shadow: 0px 2px 3px rgba(209, 209, 209, 0.18); 
 }
+
+body.dark .pagination button{
+  background: black;
+}
+body.dark .pagination .icon{
+  color:white;
+}
+body.dark .pagination button:hover{
+  background-color:rgb(52, 52, 52);
+}
+body.dark .pagination p{
+  color:white;
+}

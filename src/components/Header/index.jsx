@@ -77,7 +77,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   };
 
   return (
-    <header className={`w-full p-1 ${theme === 'dark' ? 'bg-gray-700 text-white shadow-sm' : 'bg-white text-gray-800 shadow-sm'}`}>
+    <header className={`w-full p-1 ${theme === 'dark' ? 'bg-transparent text-white' : 'bg-gray-100 shadow-md text-gray-800'}`}>
       <div className="flex items-center px-2 justify-between w-full">
         {/* Logo with title text */}
         <div className="flex items-center space-x-3">
