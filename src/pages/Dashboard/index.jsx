@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaFilter, FaIdCard, FaHome, FaGraduationCap, FaHospital, FaBriefcase, FaFileContract, FaHandsHelping, FaRing, FaGavel, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import DocumentModal from './components/document_model';
 import noaadharlinkimage from '../../assets/images/dashboardimg.json';
 import { useMediaQuery } from 'react-responsive';
@@ -32,6 +32,18 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     "Government Schemes & Social Welfare Documents",
     "Marriage and Family Documents",
     "Legal Documents",
+  ];
+
+  const icons = [
+    <FaIdCard />,  // Unique Identification & Identity Proofs
+    <FaHome />,  // Address Proofs
+    <FaGraduationCap />,  // Education-related Documents
+    <FaHospital />,  // Healthcare & Medical Documents
+    <FaBriefcase />,  // Financial & Legal Documents
+    <FaFileContract />,  // Business-related Documents
+    <FaHandsHelping />,  // Government Schemes & Social Welfare Documents
+    <FaRing />,  // Marriage and Family Documents
+    <FaGavel />,  // Legal Documents
   ];
 
   useEffect(() => {
@@ -83,10 +95,14 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   };
 
   const handleSelectChange = (type) => {
-    if (selectedTypes.includes(type)) {
-      setSelectedTypes(selectedTypes.filter((t) => t !== type));
+    if (type === "None") {
+      setSelectedTypes([]);
     } else {
-      setSelectedTypes([type]);
+      if (selectedTypes.includes(type)) {
+        setSelectedTypes(selectedTypes.filter((t) => t !== type));
+      } else {
+        setSelectedTypes([type]);
+      }
     }
   };
 
@@ -163,131 +179,222 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     }
   };
 
+  const [sortOrder, setSortOrder] = useState("latest"); // Default is 'latest'
+
+  const handleSortChange = (order) => {
+    setSortOrder(order);
+  };
+
+  const sortedDocuments = [...currentDocuments].sort((a, b) => {
+    const dateA = new Date(a.date_of_upload);
+    const dateB = new Date(b.date_of_upload);
+
+    if (sortOrder === "latest") {
+      return dateB - dateA; 
+    } else {
+      return dateA - dateB;
+    }
+  });
+
+
   return (
-    <div className="dashboard flex flex-col md:flex-row p-6">
+    <div className="dashboard flex flex-col md:flex-row px-2">
       {aadharPresent ? (
         <>
-          <div className="md:!h-[80vh] left-section flex-none w-full md:w-1/5 mb-6 md:mb-0 overflow-y-auto border-r pr-4">
-            <h4 className="!text-lg font-semibold mb-4 !font-bold">FILTERS</h4>
-            {isMobile ? (
-              <select
-                onChange={(e) => handleSelectChange(e.target.value)}
-                className="form-select w-full border p-2 rounded-md text-sm"
-                value={selectedTypes[0] || ""}
-              >
-                {documentTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="dashboard-filters space-y-3">
-                {documentTypes.map((type) => (
-                  <div key={type} className="dashboard-filters-mapped flex items-center space-x-3 bg-gray-100 rounded-sm p-2 hover:shadow-md transition duration-200">
-                    <input
-                      type="checkbox"
-                      id={type}
-                      checked={selectedTypes.includes(type)}
-                      onChange={() => handleCheckboxChange(type)}
-                      className="filter-checkboxes appearance-none w-6 h-6 min-w-6 min-h-6 max-w-6 max-h-6 border-2 border-gray-800 rounded-xs checked:bg-black checked:border-black checked:before:content-['✓'] checked:before:absolute checked:before:text-white checked:before:text-sm checked:before:font-bold checked:before:inset-0 checked:before:flex checked:before:items-center checked:before:justify-center focus:outline-none relative"
-                    />
-                    <label htmlFor={type} className="text-sm mx-2 text-black">{type}</label>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        {isMobile && (
+          <select
+            onChange={(e) => handleSelectChange(e.target.value)}
+            className="mobile-form-select w-full border p-2 rounded-md text-sm"
+            value={selectedTypes[0] || ""}
+          >
+            <option value="None">None</option>
+            {documentTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        )}
 
-          <div className="right-section flex-1 ml-0 md:ml-6 max-h-[80vh] overflow-y-auto p-2">
-            <div className='flex flex-row mb-4 justify-between'>
-              <h4 className="text-lg !font-bold">DOCUMENTS</h4>
-              <div className="pagination flex justify-end">
+        {!isMobile && (
+          <div className="dashboard-filters md:w-1/5 w-full flex-none rounded-xl shadow-md p-3 md:p-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center gap-2">
+                <FaFilter className="text-lg text-gray-600" />
+                <h5 className="text-md font-bold text-gray-800">Filters</h5>
+              </div>
+
+              {/* Filter Options */}
+              <div className="filter-item-container flex flex-col space-y-2 text-left">
+                {documentTypes.map((type,index) => {
+                  const isSelected = selectedTypes.includes(type);
+                  return (
+                    <div className={`filter-item cursor-pointer text-black flex items-center justify-center rounded-lg border-2 px-2 py-2 transition-all duration-200
+                      ${isSelected
+                        ? '!bg-blue-600 !border-blue-700 shadow-lg transform scale-105'
+                        : 'text-gray-800 border-gray-300 hover:bg-gray-200 hover:shadow-md transform hover:scale-105'}`}>
+                      <div className={`filter-icons flex-0 text-left text-gray-700 ${isSelected ? '!text-white' : ''}`}>{icons[index]}</div>
+                      <label
+                        key={type}
+                        htmlFor={type}
+                        className={`ml-2 flex-1 text-black ${isSelected ? '!text-white' : ' '}`}
+                      >
+                        <input
+                          type="checkbox"
+                          id={type}
+                          checked={isSelected}
+                          onChange={() => handleCheckboxChange(type)}
+                          className="hidden"
+                        />
+                        
+                        <span className="text-sm font-medium">{type}</span>
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+          <div className="dashboard-documents right-section flex-1 ml-0 md:ml-6 max-h-[70vh] sm:max-h-[75vh] md:max-h-[85vh] overflow-y-auto p-2">
+            <div className="flex flex-row mb-2 justify-between items-center">
+              <div className="sort-documents flex items-center space-x-2 bg-white p-2 border rounded-md">
+                <label htmlFor="sortOrder" className="text-black text-sm font-bold">Sort By</label>
+                <div className="flex items-center space-x-2">
+                  {sortOrder === "latest" && (
+                    <>
+                      <span className="text-sm text-gray-700">Latest to Oldest</span>
+                      <button
+                        className="p-2 cursor-pointer text-gray-700 hover:text-gray-900"
+                        onClick={() => handleSortChange("oldest")}
+                        aria-label="Sort by oldest to latest"
+                      >
+                      <FaArrowDown />
+                    </button>
+                    </>
+                  )}
+                  {sortOrder === "oldest" && (
+                   <>
+                      <span className="text-sm text-gray-700">Oldest to Latest</span>
+                      <button
+                      className="p-2 cursor-pointer text-gray-700 hover:text-gray-900"
+                      onClick={() => handleSortChange("latest")}
+                      aria-label="Sort by latest to oldest"
+                      >
+                        <FaArrowUp />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="pagination flex items-center space-x-2">
                 <button 
                   onClick={() => handlePageChange(currentPage - 1)} 
                   disabled={currentPage === 1}
-                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md mx-1 flex items-center transition-all duration-200"
+                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
                 >
                   <FaChevronLeft className="icon text-gray-800" /> 
                 </button>
-                <p className="flex items-center text-gray-800 font-bold m-2">
+                <p className="text-gray-800 font-bold m-3">
                   {currentPage}/{totalPages}
                 </p>
                 <button 
                   onClick={() => handlePageChange(currentPage + 1)} 
                   disabled={currentPage === totalPages}
-                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md mx-1 flex items-center transition-all duration-200"
+                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
                 >
                   <FaChevronRight className="icon text-gray-800" /> 
                 </button>
               </div>
             </div>
+  
+            <div className="documents-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {sortedDocuments.length === 0 ? (
+                <p>No documents available.</p>
+              ) : (
+                sortedDocuments.flatMap((doc) =>
+                  filterDocuments([doc], searchQuery).map((doc) => (
+                    <div
+                      key={doc.document_name}
+                      className="pb-3 document-item hover:scale-102 transition-transform duration-200 mb-2 border rounded-lg shadow-sm hover:shadow-xl"
+                    >
+                      <div
+                        className="document-preview mb-2 relative cursor-pointer"
+                        title={`open ${doc.document_name}`}
+                        onClick={() => openModal(doc)}
+                      >
+                       <div className="absolute -top-1 -left-1 rounded-bl-lg">
+                        {doc.document_extension === "pdf" && <span className="bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
+                        {doc.document_extension === "pptx" && <span className="bg-orange-700 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
+                        {["png", "jpg", "webp"].includes(doc.document_extension) && <span className="bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
+                        {(doc.document_extension === "docx" || doc.document_extension === "doc") && <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
+                        {["xlsx", "xls", "csv"].includes(doc.document_extension) && <span className="bg-green-700 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
+                        {doc.document_extension === "txt" && <span className="bg-gray-600 text-white text-xs font-semibold px-3 py-1 rounded">{doc.document_extension}</span>}
+                      </div>
 
-            <div className="documents-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentDocuments.length === 0
-                ? <p>No documents available.</p>
-                : currentDocuments.flatMap((doc) =>
-                    filterDocuments([doc], searchQuery).map((doc) => (
-                      <div className="pb-3 document-item hover:scale-102 transition-scale duration-200 mb-4 border rounded-lg shadow-sm hover:shadow-xl transition duration-300">
-                        <div className="document-preview mb-2 relative cursor-pointer" title={`open ${doc.document_name}`} onClick={() => openModal(doc)}>
-                          <div className="absolute -top-1 -left-1 rounded-bl-lg text-white">
-                            {doc.document_extension === "pdf" && <span className="bg-red-500 p-2 rounded">{doc.document_extension}</span>}
-                            {doc.document_extension === "pptx" && <span className="bg-orange-600 p-2 rounded">{doc.document_extension}</span>}
-                            {["png", "jpg", "webp"].includes(doc.document_extension) && <span className="bg-blue-400 p-2 rounded">{doc.document_extension}</span>}
-                            {(doc.document_extension === "docx" || doc.document_extension === "doc") && <span className="bg-blue-500 p-2 rounded">{doc.document_extension}</span>}
-                            {["xlsx", "xls", "csv"].includes(doc.document_extension) && <span className="bg-green-600 p-2 rounded">{doc.document_extension}</span>}
-                            {doc.document_extension === "txt" && <span className="bg-gray-500 p-2 rounded">{doc.document_extension}</span>}
-                          </div>
+                        <LazyLoad height={200} offset={100}>
+                          <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
+                        </LazyLoad>
+                      </div>
+  
+                      <div className="document-info text-center max-w-full overflow-hidden p-2">
+                        <span className="font-bold break-words text-sm">{doc.document_name}</span>
+                        <p className="text-xs text-gray-500">
+                          {new Date(doc.date_of_upload).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })} • {new Date(doc.date_of_upload).toLocaleTimeString(undefined, {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })}
+                        </p>
 
-                          <LazyLoad height={200} offset={100}>
-                            <FilePreview base64String={doc.upload_data} fileType={doc.document_extension}/>
-                          </LazyLoad>
-                        </div>
-
-                        <div className="document-info text-center max-w-full overflow-hidden pt-4">
-                          <span className="font-medium break-words">{doc.document_name}</span>
-
-                          <div className="action-icons flex justify-center items-center space-x-4 my-2 overflow-x-auto">
-                            <FaShareAlt
-                              className="text-xl cursor-pointer text-blue-500 hover:text-blue-800 transition duration-200"
-                              title="Share"
-                            />
-                            <FaDownload
-                              className="text-xl cursor-pointer text-green-500 hover:text-green-800 transition duration-200"
-                              title="Download"
-                              onClick={() => handleDownload(doc)}
-                            />
-                            <FaTrash
-                              className="text-xl cursor-pointer text-red-500 hover:text-red-800 transition duration-200"
-                              title="Delete"
-                              onClick={() => {
-                                setDocToDelete(doc);
-                                setShowConfirmDeleteModal(true);
-                              }}
-                            />
-                          </div>
+                        <div className="action-icons flex justify-evenly items-center space-x-4 mt-4 overflow-x-auto">
+                          <FaShareAlt
+                            className="text-md cursor-pointer text-gray-400 hover:text-blue-800 transition duration-200"
+                            title="Share"
+                          />
+                          <FaDownload
+                            className="text-md cursor-pointer text-gray-400 hover:text-green-800 transition duration-200"
+                            title="Download"
+                            onClick={() => handleDownload(doc)}
+                          />
+                          <FaTrash
+                            className="text-md cursor-pointer text-gray-400 hover:text-red-800 transition duration-200"
+                            title="Delete"
+                            onClick={() => {
+                              setDocToDelete(doc);
+                              setShowConfirmDeleteModal(true);
+                            }}
+                          />
                         </div>
                       </div>
-                    ))
-                  )}
+                    </div>
+                  ))
+                )
+              )}
             </div>
           </div>
         </>
       ) : (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center flex flex-col items-center">
           <p className="text-red-500 mt-4">Please link your Aadhar in the profile menu!</p>
-          <Lottie animationData={noaadharlinkimage}/>
+          <Lottie animationData={noaadharlinkimage} />
         </div>
       )}
-
+  
       {isModalOpen && (
         <DocumentModal doc={currentDoc} closeModal={closeModal} />
       )}
+  
       {showDeleteConfirmModal && docToDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="delete-confirm-modal bg-white p-6 rounded-lg shadow-lg max-w-[90vw] md:max-w-[35vw]">
             <h5 className="!text-md !font-bold mb-4">
-              Are you sure you want to delete {docToDelete.document_name} ? 
+              Are you sure you want to delete {docToDelete.document_name}?
             </h5>
             <div className="flex justify-end !space-x-4">
               <button
@@ -310,7 +417,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
         </div>
       )}
     </div>
-  );
+  );  
 };
 
 export default Dashboard;

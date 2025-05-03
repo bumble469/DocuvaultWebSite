@@ -11,7 +11,6 @@ const FilePreview = ({ base64String, fileType }) => {
   const [excelContent, setExcelContent] = useState(null);
   const [txtContent, setTxtContent] = useState('');
   const [pdfImage, setPdfImage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState('');
 
   const handleDocx = (base64String) => {
     const binaryString = atob(base64String);
@@ -96,11 +95,8 @@ const FilePreview = ({ base64String, fileType }) => {
 
   useEffect(() => {
     if (!checkFileSize(base64String)) {
-      setErrorMessage("File is too large for preview (max 1MB).");
       return;
     }
-
-    setErrorMessage(''); 
 
     if (fileType === "docx") {
       handleDocx(base64String);
@@ -117,8 +113,8 @@ const FilePreview = ({ base64String, fileType }) => {
   return (
     <>
       {!checkFileSize(base64String) ? (
-        <div className="flex flex-col items-center justify-center h-40 md:h-70 w-full bg-gray-100 rounded-lg p-4">
-          <p className="text-red">File too large for preview!</p>
+        <div className="h-30 md:h-45 w-full object-cover rounded-lg flex flex-col justify-center items-center bg-gray-200">
+          <p className="text-red-800">File too large for preview!</p>
           <FontAwesomeIcon icon={fileType === "pdf" ? faFilePdf : 
               fileType === "docx" || fileType === "doc" ? faFileWord :
               fileType === "xlsx" || fileType === "xls" || fileType === "csv" ? faFileExcel :
@@ -133,7 +129,7 @@ const FilePreview = ({ base64String, fileType }) => {
             <img
               src={pdfImage}
               alt="PDF Preview"
-              className="h-40 md:h-70 w-full object-cover rounded-lg"
+              className="h-30 md:h-45 w-full object-cover rounded-lg"
             />
           )}
 
@@ -141,32 +137,32 @@ const FilePreview = ({ base64String, fileType }) => {
             <img
               src={`data:image/${fileType};base64,${base64String}`}
               alt="Image Preview"
-              className="h-40 md:h-70 w-full object-cover rounded-lg p-4"
+              className="h-30 md:h-45 w-full object-cover rounded-lg"
             />
           )}
 
           {(fileType === "docx" || fileType === "doc") && (
             <div
-              className="doc-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
+              className="doc-preview h-30 md:h-45 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
               dangerouslySetInnerHTML={{ __html: docContent }}
             />
           )}
 
           {(fileType === "xlsx" || fileType === "xls" || fileType === "csv") && excelContent && (
             <div
-              className="xlsx-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
+              className="xlsx-preview h-30 md:h-45 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
               dangerouslySetInnerHTML={{ __html: excelContent }}
             />
           )}
 
           {fileType === "pptx" && (
-            <div className="flex items-center justify-center h-40 md:h-70 w-full bg-gray-100 rounded-lg p-4">
+            <div className="flex items-center justify-center h-30 md:h-45 w-full bg-gray-100 rounded-lg p-4">
               <FontAwesomeIcon icon={faFilePowerpoint} size="3x" />
             </div>
           )}
 
           {fileType === "txt" && (
-            <div className="txt-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white">
+            <div className="txt-preview h-30 md:h-45 w-full object-cover rounded-lg overflow-hidden p-4 bg-white">
               {txtContent}
             </div>
           )}
