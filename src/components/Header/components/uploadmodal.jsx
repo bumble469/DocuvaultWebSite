@@ -98,7 +98,7 @@ const UploadDocumentModal = ({ onClose }) => {
       }}
     >
       <div className="upload-doc-modal bg-white w-lg max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg shadow-lg p-4">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center">
           <p className="text-xl font-bold">Upload Document</p>
           <button
             onClick={onClose}
@@ -107,6 +107,9 @@ const UploadDocumentModal = ({ onClose }) => {
             &times;
           </button>
         </div>
+        <p className="text-sm">
+          For optimal performance, we recommend avoiding the upload of large files, as it may impact the preview load time.
+        </p>
         <hr className="border border-black mb-4" />
 
         {/* Drag-and-Drop Area */}

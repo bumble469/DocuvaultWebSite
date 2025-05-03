@@ -247,7 +247,10 @@ const ProfileModal = ({ onClose }) => {
           <button
             title="Change image"
             className="relative left-10 bottom-10 transition-scale duration-100 hover:scale-105"
-            onClick={() => document.getElementById('fileInput').click()}
+            onClick={() =>{
+              document.getElementById('fileInput').click()
+              setIsEditing(true)
+            }}
           >
             <img src={editimageicon} height={35} width={35} />
           </button>

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
-import pptxiconpreview from "../../../assets/images/pptxiconpreview.png";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileWord, faFilePdf, faFileExcel, faFileText, faFolder, faFilePowerpoint } from '@fortawesome/free-solid-svg-icons';
+
 let isScriptLoaded = false;
 
 const FilePreview = ({ base64String, fileType }) => {
@@ -9,6 +11,7 @@ const FilePreview = ({ base64String, fileType }) => {
   const [excelContent, setExcelContent] = useState(null);
   const [txtContent, setTxtContent] = useState('');
   const [pdfImage, setPdfImage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleDocx = (base64String) => {
     const binaryString = atob(base64String);
@@ -50,7 +53,7 @@ const FilePreview = ({ base64String, fileType }) => {
         resolve();
         return;
       }
-  
+
       const script = document.createElement('script');
       script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
       script.onload = () => {
@@ -62,92 +65,112 @@ const FilePreview = ({ base64String, fileType }) => {
     }).then(() => {
       const pdfData = atob(base64String);
       const loadingTask = window.pdfjsLib.getDocument({ data: pdfData });
-  
+
       loadingTask.promise.then(pdf => {
         pdf.getPage(1).then(page => {
           const scale = 1.5;
           const viewport = page.getViewport({ scale });
-  
+
           const tempCanvas = document.createElement('canvas');
           const context = tempCanvas.getContext('2d');
-  
+
           tempCanvas.width = viewport.width;
           tempCanvas.height = viewport.height;
-  
+
           page.render({
             canvasContext: context,
             viewport: viewport
           }).promise.then(() => {
             const imageUrl = tempCanvas.toDataURL();
-            setPdfImage(imageUrl); 
+            setPdfImage(imageUrl);
           });
         });
       });
     });
   };
-  
+
+  const checkFileSize = (base64String) => {
+    const sizeInBytes = (base64String.length * 3) / 4;
+    return sizeInBytes <= 1048576; // 1MB = 1048576 bytes
+  };
 
   useEffect(() => {
-    console.log("File type received:", fileType);
+    if (!checkFileSize(base64String)) {
+      setErrorMessage("File is too large for preview (max 1MB).");
+      return;
+    }
+
+    setErrorMessage(''); 
+
     if (fileType === "docx") {
       handleDocx(base64String);
     } else if (fileType === "pdf") {
       loadPdfJs();
-    } else if (fileType === "xlsx" || fileType === "xls" || fileType == "csv") {
+    } else if (fileType === "xlsx" || fileType === "xls" || fileType === "csv") {
       handleXlsx(base64String);
     } else if (fileType === "txt") {
       const decoded = atob(base64String);
       setTxtContent(decoded);
     }
   }, [base64String, fileType]);
-  
 
   return (
     <>
-      {fileType === "pdf" && pdfImage && (
-        <img
-          src={pdfImage}
-          alt="PDF Preview"
-          className="h-40 md:h-70 w-full object-cover rounded-lg"
-        />
-      )}
-
-      {(fileType === "png" || fileType === "jpg" || fileType === "webp") && (
-        <img
-          src={`data:image/${fileType};base64,${base64String}`}
-          alt="Image Preview"
-          className="h-40 md:h-70 w-full object-cover rounded-lg p-4"
-        /> 
-      )}
-
-      {(fileType === "docx" || fileType === "doc") && (
-        <div
-          className="doc-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
-          dangerouslySetInnerHTML={{ __html: docContent }}
-        />
-      )}
-
-      {(fileType === "xlsx" || fileType === "xls" || fileType === "csv") && excelContent && (
-        <div
-          className="xlsx-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
-          dangerouslySetInnerHTML={{ __html: excelContent }}
-        />
-      )}
-
-      {fileType === "pptx" && (
-        <div className="flex items-center justify-center h-40 md:h-70 w-full bg-gray-100 rounded-lg p-4">
-          <img
-            src={pptxiconpreview}
-            alt="PPTX Icon"
-            className="h-16 w-16 object-contain"
-          />
+      {!checkFileSize(base64String) ? (
+        <div className="flex flex-col items-center justify-center h-40 md:h-70 w-full bg-gray-100 rounded-lg p-4">
+          <p className="text-red">File too large for preview!</p>
+          <FontAwesomeIcon icon={fileType === "pdf" ? faFilePdf : 
+              fileType === "docx" || fileType === "doc" ? faFileWord :
+              fileType === "xlsx" || fileType === "xls" || fileType === "csv" ? faFileExcel :
+              fileType === "pptx" ? faFilePowerpoint :
+              fileType === "txt" ? faFileText : faFolder} 
+            size="3x" className="text-gray-600" />
         </div>
-      )}
+      ) : (
+        <>
+          {/* Document previews */}
+          {fileType === "pdf" && pdfImage && (
+            <img
+              src={pdfImage}
+              alt="PDF Preview"
+              className="h-40 md:h-70 w-full object-cover rounded-lg"
+            />
+          )}
 
-      {fileType === "txt" && (
-        <div className="txt-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white">
-          {txtContent}
-        </div>
+          {(fileType === "png" || fileType === "jpg" || fileType === "webp") && (
+            <img
+              src={`data:image/${fileType};base64,${base64String}`}
+              alt="Image Preview"
+              className="h-40 md:h-70 w-full object-cover rounded-lg p-4"
+            />
+          )}
+
+          {(fileType === "docx" || fileType === "doc") && (
+            <div
+              className="doc-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
+              dangerouslySetInnerHTML={{ __html: docContent }}
+            />
+          )}
+
+          {(fileType === "xlsx" || fileType === "xls" || fileType === "csv") && excelContent && (
+            <div
+              className="xlsx-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white"
+              dangerouslySetInnerHTML={{ __html: excelContent }}
+            />
+          )}
+
+          {fileType === "pptx" && (
+            <div className="flex items-center justify-center h-40 md:h-70 w-full bg-gray-100 rounded-lg p-4">
+              <FontAwesomeIcon icon={faFilePowerpoint} size="3x" />
+            </div>
+          )}
+
+          {fileType === "txt" && (
+            <div className="txt-preview h-40 md:h-70 w-full object-cover rounded-lg overflow-hidden p-4 bg-white">
+              {txtContent}
+            </div>
+          )}
+        </>
       )}
     </>
   );
