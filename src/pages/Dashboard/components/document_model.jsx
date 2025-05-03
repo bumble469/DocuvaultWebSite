@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import mammoth from 'mammoth';
 import * as XLSX from 'xlsx';
-import Lottie from 'lottie-react'
-import fileloading from '../../../assets/images/filepreviewloading.json'
 
 const DocumentModal = ({ doc, closeModal }) => {
   const [documentContent, setDocumentContent] = useState('');
@@ -126,15 +124,23 @@ const DocumentModal = ({ doc, closeModal }) => {
                 dangerouslySetInnerHTML={{ __html: documentContent }} 
               />
             ) : (
-              <object
-                data={`http://localhost:8000/preview-document/${doc.document_name}`}
-                type="application/pdf"
+              <>
+              {doc.document_extension === "jpg" || doc.document_extension === "png" || doc.document_extension === "webp" ? (
+                <img
+                  src={`data:image/${doc.document_extension};base64,${doc.upload_data}`}
+                  alt={doc.document_name}
+                  className="w-full h-[70vh] object-contain rounded border border-gray-300"
+                />
+              ) : (
+                <iframe
+                src={`http://localhost:8000/preview-document/${doc.document_name}`}
+                type={`application/${doc.document_extension}`}
                 width="100%"
                 height="100%"
-                className="w-full h-[70vh] rounded border border-gray-300"
-              >
-                <p>Your browser does not support inline PDFs. You can download the file <a href={`http://localhost:8000/preview-document/${doc.document_name}`}>here</a>.</p>
-              </object>
+                className="w-full h-[70vh] object-cover rounded border border-gray-300"
+              />
+              )}
+              </>
             )}
           </div>
         </div>

@@ -67,9 +67,6 @@ body.light .auth label, input{
   color:black!important
 }
 
-body.dark .left-section .dashboard-filters label{
-  color: white !important;
-}
 body.light .confirm-logout-dialog{
   color:rgb(32, 32, 32);
   background:rgb(250,250,250)
@@ -112,7 +109,8 @@ body.dark .profile-modal .cancel-btn{
   color:white
 }
 
-body.dark .profile-modal .edit-details{
+body.dark .profile-modal .edit-details,
+body.dark .dashboard .mobile-form-select{
   background: rgb(31, 31, 31) !important;
   color: white !important;
 }
@@ -193,14 +191,6 @@ body.dark .document-large-preview-tables .l1{
   color: white ;
 }
 
-body.dark .dashboard-filters-mapped{
-  background: rgb(39, 39, 39);
-}
-body.dark .dashboard-filters-mapped:hover{
-  background: rgb(23, 23, 23);
-  box-shadow: 0px 2px 3px rgba(209, 209, 209, 0.18); 
-}
-
 body.dark .pagination button{
   background: black;
 }
@@ -213,3 +203,71 @@ body.dark .pagination button:hover{
 body.dark .pagination p{
   color:white;
 }
+//DASHBOARD
+body.dark .dashboard-filters .filter-item{
+  background-color:rgb(40, 40, 40);
+  border:black;
+}
+body.dark .dashboard-filters .filter-item:hover{
+  background-color:rgb(45, 45, 45);
+}
+body.dark .dashboard-filters .filter-item{
+  border: 1px solid rgb(96, 96, 96) !important;
+}
+body.dark .document-item{
+  background-color:rgb(40, 40, 40);
+  border: 1px solid rgb(96, 96, 96) !important;
+}
+body.dark .dashboard-filters .filter-item div{
+  color:white;
+}
+body.dark .dashboard-filters .filter-item label{
+  color: white !important;
+}
+
+body.dark .dashboard-documents .document-info p{
+  color: white;
+}
+body.dark .dashboard-documents .sort-documents{
+  background-color: rgb(40, 40, 40) !important;
+  border: 1px solid rgb(96, 96, 96) !important;
+}
+body.dark .dashboard-documents .sort-documents span{
+  color:white !important;
+}
+body.dark .dashboard-documents .sort-documents button{
+  color:white !important;
+}
+body.dark .dashboard-documents .sort-documents label{
+  color:white !important;
+}
+//END DASHBOARD
+
+//SCROLLBAR
+.dashboard-filters::-webkit-scrollbar,
+.dashboard-documents::-webkit-scrollbar,
+.profile-modal::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dashboard-filters::-webkit-scrollbar-track,
+.dashboard-documents::-webkit-scrollbar-track,
+.profile-modal::--webkit-scrollbar-track {
+  background: transparent; /* No background */
+}
+
+.dashboard-filters::-webkit-scrollbar-thumb,
+.dashboard-documents::-webkit-scrollbar-thumb,
+.profile-modal::-webkit-scrollbar-thumb {
+  background-color: rgba(107, 107, 107, 0.6); /* Light gray */
+  border-radius: 4px;
+}
+
+.dashboard-filters,
+.dashboard-documents,
+.profile-modal {
+  scrollbar-width: thin;             /* Firefox */
+  scrollbar-color: rgba(200, 200, 200, 0.6) transparent;
+}
+//END SCROLLBAR

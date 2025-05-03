@@ -77,23 +77,20 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   };
 
   return (
-    <header className={`w-full p-1 ${theme === 'dark' ? 'bg-transparent text-white' : 'bg-gray-100 shadow-md text-gray-800'}`}>
+    <header className={`w-full p-2 ${theme === 'dark' ? 'bg-transparent text-white' : 'bg-white border-b border-gray-200 text-gray-800'}`}>
       <div className="flex items-center px-2 justify-between w-full">
-        {/* Logo with title text */}
         <div className="flex items-center space-x-3">
           <img
             src={logo}
             alt="Logo"
-            className="h-8 md:h-12 w-auto transition-transform duration-300 hover:scale-105 hover:brightness-80 cursor-pointer"
+            className="h-8 md:h-10 w-auto transition-transform duration-300 hover:scale-105 hover:brightness-80 cursor-pointer"
           />
           <div className={`h-10 border-l-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}></div>
           <div className="mt-2">
-            <h3 className={`!font-bold !text-sm md:!text-xl lg:!text-2xl font-semibold leading-tight m-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>DOCUVAULT</h3>
+            <h4 className={`!text-sm md:!text-lg lg:!text-xl !font-extrabold leading-tight m-0 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>DOCUVAULT</h4>
             <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>your personal document wallet</p>
           </div>
         </div>
-
-        {/* Search Bar (Centered) */}
         <div className={`${isMobile ? 'hidden' : 'flex flex-1 justify-center'}`}>
           <div className="relative w-full max-w-md">
             <input
@@ -114,10 +111,10 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
             <button
               disabled={!uploadButton}
               onClick={() => setShowUploadModal(true)}
-              className={`rounded-sm !text-xs md:!text-sm lg:!text-md flex items-center space-x-2 
+              className={`!rounded-lg !text-xs md:!text-sm lg:!text-md flex items-center space-x-2 
                 ${theme === 'dark' 
-                  ? 'text-gray-300 bg-gray-700' 
-                  : 'text-gray-800 bg-gray-200'} 
+                  ? 'text-gray-100 bg-gray-800' 
+                  : 'text-gray-800 bg-gray-100'} 
                 !no-underline px-3 py-3 
                 ${!uploadButton 
                   ? 'opacity-60' 
@@ -191,7 +188,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
               type="text"
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search documents..."
-              className={`text-md px-4 py-2 border ${theme === 'dark' ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-800'} focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 w-full rounded-full`}
+              className={`text-md px-4 py-2 border ${theme === 'dark' ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-800'} focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 w-full rounded-md`}
             />
             <button className={`absolute right-3 top-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} !text-xl`}>
               <FaSearch />
@@ -202,7 +199,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
           <div title={!uploadButton ? uploadButtonTooltip : ''}>
             <button
               disabled={!uploadButton}
-              onClick={() => alert('button clicked')}
+              onClick={() => setShowUploadModal(true)}
               className={`text-md flex items-center space-x-2 ${theme === 'dark' ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' : 'text-gray-800 bg-gray-200 hover:bg-gray-300'} !no-underline hover:scale-105 transition-transform duration-200 px-3 py-2 
               ${!uploadButton ? 'cursor-not-allowed opacity-50 blur-[1px]' : ''}`}
             >
@@ -225,12 +222,12 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
             <div className="flex justify-end !space-x-4">
               <button 
                 onClick={() => setShowLogoutDialog(false)} 
-                className="px-3 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-all duration-200">
+                className="px-3 py-2 bg-gray-300 text-gray-800 !rounded-md hover:bg-gray-400 transition-all duration-200">
                 Cancel
               </button>
               <button 
                 onClick={handleLogout} 
-                className="px-3 py-2 bg-red-800 text-white rounded-md hover:bg-red-600 transition-all duration-200">
+                className="px-3 py-2 bg-red-800 text-white !rounded-md hover:bg-red-600 transition-all duration-200">
                 Logout
               </button>
             </div>
