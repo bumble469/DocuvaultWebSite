@@ -203,6 +203,7 @@ body.dark .pagination button:hover{
 body.dark .pagination p{
   color:white;
 }
+
 //DASHBOARD
 body.dark .dashboard-filters .filter-item{
   background-color:rgb(40, 40, 40);
@@ -241,32 +242,59 @@ body.dark .dashboard-documents .sort-documents button{
 body.dark .dashboard-documents .sort-documents label{
   color:white !important;
 }
+body.dark .helpandsupport-modal{
+  background-color: rgb(40, 40, 40) !important;
+}
+body.dark .helpandsupport-modal h4{
+  color:white !important;
+}
+body.dark .helpandsupport-modal h5{
+  color:white !important;
+}
+body.dark .helpandsupport-modal p{
+  color:white !important;
+}
+
+body.dark .modal-document-sharing,
+body.dark .activity-history-modal{
+  background-color: rgb(38, 38, 38) !important;
+}
+body.dark .modal-document-sharing input,
+body.dark .activity-history-modal h4,
+body.dark .activity-history-modal table th,
+body.dark .activity-history-modal table td,
+body.dark .activity-history-modal table td ul{
+  color: white !important
+}
 //END DASHBOARD
 
 //SCROLLBAR
 .dashboard-filters::-webkit-scrollbar,
 .dashboard-documents::-webkit-scrollbar,
-.profile-modal::-webkit-scrollbar {
+.profile-modal::-webkit-scrollbar,
+.activity-history-modal::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 .dashboard-filters::-webkit-scrollbar-track,
 .dashboard-documents::-webkit-scrollbar-track,
-.profile-modal::--webkit-scrollbar-track {
+.profile-modal::--webkit-scrollbar-track,
+.activity-history-modal::-webkit-scrollbar-track {
   background: transparent; /* No background */
 }
 
 .dashboard-filters::-webkit-scrollbar-thumb,
 .dashboard-documents::-webkit-scrollbar-thumb,
-.profile-modal::-webkit-scrollbar-thumb {
+.profile-modal::-webkit-scrollbar-thumb,
+.activity-history-modal::-webkit-scrollbar-thumb {
   background-color: rgba(107, 107, 107, 0.6); /* Light gray */
-  border-radius: 4px;
 }
 
 .dashboard-filters,
 .dashboard-documents,
-.profile-modal {
+.profile-modal,
+.activity-history-modal {
   scrollbar-width: thin;             /* Firefox */
   scrollbar-color: rgba(200, 200, 200, 0.6) transparent;
 }

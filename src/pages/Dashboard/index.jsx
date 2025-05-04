@@ -8,6 +8,7 @@ import axios from 'axios';
 import FilePreview from './components/document_preview';
 import LazyLoad from 'react-lazyload';
 import Lottie from 'lottie-react';
+import ShareDocumentModal from './components/share_document_modal';
 
 const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -20,6 +21,9 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [showDeleteConfirmModal, setShowConfirmDeleteModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openShareDocumentModal, setOpenShareDocumentModal] = useState(false);
+  const [currentShareDoc, setCurrentShareDoc] = useState(null);
+
   const itemsPerPage = 6;
 
   const documentTypes = [
@@ -86,6 +90,16 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     setCurrentDoc(null);
   };
 
+
+  const openShareDocModal = (doc) => {
+    setCurrentShareDoc(doc);
+    setOpenShareDocumentModal(true);
+  };
+
+  const closeShareDocModal = () => {
+    setOpenShareDocumentModal(false);
+    setCurrentShareDoc(null);
+  };
   const handleCheckboxChange = (type) => {
     if (selectedTypes.includes(type)) {
       setSelectedTypes(selectedTypes.filter((t) => t !== type));
@@ -356,6 +370,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                           <FaShareAlt
                             className="text-md cursor-pointer text-gray-400 hover:text-blue-800 transition duration-200"
                             title="Share"
+                            onClick={()=>openShareDocModal(doc)}
                           />
                           <FaDownload
                             className="text-md cursor-pointer text-gray-400 hover:text-green-800 transition duration-200"
@@ -389,7 +404,9 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
       {isModalOpen && (
         <DocumentModal doc={currentDoc} closeModal={closeModal} />
       )}
-  
+      {openShareDocumentModal && (
+        <ShareDocumentModal onClose={()=>setOpenShareDocumentModal(false)} doc={currentShareDoc}/>
+      )}
       {showDeleteConfirmModal && docToDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="delete-confirm-modal bg-white p-6 rounded-lg shadow-lg max-w-[90vw] md:max-w-[35vw]">

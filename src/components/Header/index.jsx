@@ -12,6 +12,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ProfileModal from './components/profilemodal.jsx';
 import UploadDocumentModal from './components/uploadmodal.jsx';
+import ActivityHistoryModal from './components/activityhistorymodal.jsx';
+import HelpandSupportModal from './components/helpandsupportmodal.jsx';
 
 const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUploadModal, setShowUploadModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -22,6 +24,8 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   const API_URL = import.meta.env.VITE_API_URL;
   const [uploadButton, setUploadButton] = useState(false);
   const [uploadButtonTooltip, setUploadButtonTooltip] = useState("");
+  const [isOpenActivityHistoryModal, setIsOpenActivityHistoryModal] = useState(false);
+  const [openHelpandSupportModal, setIsOpenHelpAndSupportModal] = useState(false)
 
   useEffect(() => {
     const checkAadharLink = async () => {
@@ -165,10 +169,14 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
               className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
               <FaUser className="mr-3 text-lg" /> View Profile
             </button>
-            <button className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
+            <button 
+            onClick={()=>setIsOpenActivityHistoryModal(true)}
+            className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
               <FaHistory className="mr-3 text-lg" /> Activity History
             </button>
-            <button className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
+            <button 
+              onClick={()=>setIsOpenHelpAndSupportModal(true)}
+              className="flex items-center w-full px-2 py-2 rounded-md hover:bg-gray-200 transition-all duration-200">
               <FaQuestionCircle className="mr-3 text-lg" /> Help/Support
             </button>
             <button 
@@ -211,6 +219,8 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
       )}
       {showProfileModal && <ProfileModal onClose={() => setShowProfileModal(false)} />}
       {showUploadModal && <UploadDocumentModal onClose={() => setShowUploadModal(false)} />}
+      {isOpenActivityHistoryModal && <ActivityHistoryModal onClose={()=>setIsOpenActivityHistoryModal(false)} />}
+      {openHelpandSupportModal && <HelpandSupportModal onClose={()=>setIsOpenHelpAndSupportModal(false)} />}
       {showLogoutDialog && (
          <div className="fixed inset-0 flex justify-center items-center z-50"
          style={{
