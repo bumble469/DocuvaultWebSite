@@ -3,8 +3,8 @@ import logo from '../../assets/images/logo1.png';
 import { FaUpload, FaSearch, FaHistory, FaQuestionCircle, FaSignOutAlt, FaUser } from 'react-icons/fa';
 import sunicon from '../../assets/images/sunicon.png';
 import moonicon from '../../assets/images/moonicon.png';
-import bellicondark from '../../assets/images/bellicon.png';
-import belliconwhite from '../../assets/images/belliconwhite.png';
+import aidoclight from '../../assets/images/ai-doc-light.png';
+import aidocdark from '../../assets/images/ai-doc-dark.png';
 import { useMediaQuery } from 'react-responsive';
 import ThemeContext from '../../context/ThemeContext.jsx';
 import { toast } from 'react-toastify';
@@ -132,9 +132,8 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
           </span>
 
           {/* Notifications Icon */}
-          <button className={`relative !text-sm md:!text-xl ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-yellow-600 hover:bg-blue-100'} transition-bg duration-200 p-2.5 m-1`}>
-            {theme === 'dark' ? <img src={belliconwhite} height={25} width={25} /> : <img src={bellicondark} height={25} width={25} />}
-            <span className="absolute top-1 right-1 bg-red-500 text-white !text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
+          <button onClick={()=>navigate('/ai-document-generation')} title='use AI for your documents' className={`relative !text-sm md:!text-xl ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-yellow-600 hover:bg-blue-100'} transition-bg duration-200 p-2.5 m-1`}>
+            {theme === 'dark' ? <img src={aidocdark} height={25} width={25} /> : <img src={aidoclight} height={25} width={25} />}
           </button>
 
           {/* Dark Mode Toggle */}
