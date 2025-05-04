@@ -272,7 +272,8 @@ body.dark .activity-history-modal table td ul{
 .dashboard-filters::-webkit-scrollbar,
 .dashboard-documents::-webkit-scrollbar,
 .profile-modal::-webkit-scrollbar,
-.activity-history-modal::-webkit-scrollbar {
+.activity-history-modal::-webkit-scrollbar,
+.ai-document {
   width: 6px;
   height: 6px;
 }
@@ -280,21 +281,24 @@ body.dark .activity-history-modal table td ul{
 .dashboard-filters::-webkit-scrollbar-track,
 .dashboard-documents::-webkit-scrollbar-track,
 .profile-modal::--webkit-scrollbar-track,
-.activity-history-modal::-webkit-scrollbar-track {
+.activity-history-modal::-webkit-scrollbar-track,
+.ai-document {
   background: transparent; /* No background */
 }
 
 .dashboard-filters::-webkit-scrollbar-thumb,
 .dashboard-documents::-webkit-scrollbar-thumb,
 .profile-modal::-webkit-scrollbar-thumb,
-.activity-history-modal::-webkit-scrollbar-thumb {
+.activity-history-modal::-webkit-scrollbar-thumb,
+.ai-document {
   background-color: rgba(107, 107, 107, 0.6); /* Light gray */
 }
 
 .dashboard-filters,
 .dashboard-documents,
 .profile-modal,
-.activity-history-modal {
+.activity-history-modal,
+.ai-document {
   scrollbar-width: thin;             /* Firefox */
   scrollbar-color: rgba(200, 200, 200, 0.6) transparent;
 }

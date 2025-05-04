@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Auth from './pages/Auth/index.jsx';
 import Dashboard from './pages/Dashboard/index.jsx';
 import Header from './components/Header/index.jsx';
+import AIDocument from './pages/AiDocument/index.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -26,11 +27,20 @@ const AppContent = () => {
   
   return(
     <>
-      {location.pathname !== '/' && <Header setSearchQuery={setSearchQuery} showProfileModal={showProfileModal} setShowProfileModal={setShowProfileModal} showUploadModal={showUploadModal} setShowUploadModal={setShowUploadModal} /> }
+      {!['/', '/ai-document-generation'].includes(location.pathname) && (
+        <Header 
+          setSearchQuery={setSearchQuery}
+          showProfileModal={showProfileModal}
+          setShowProfileModal={setShowProfileModal}
+          showUploadModal={showUploadModal}
+          setShowUploadModal={setShowUploadModal}
+        />
+      )}
       <ToastContainer />
       <Routes>
         <Route path="/" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard searchQuery={searchQuery} showProfileModal={showProfileModal} showUploadModal={showUploadModal} />} />
+        <Route path='/ai-document-generation' element={<AIDocument/>} />
       </Routes>
     </>
   )
