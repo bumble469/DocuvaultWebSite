@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaFilter, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import {
   IdentificationIcon,
@@ -16,10 +16,9 @@ import noaadharlinkimage from '../../assets/images/dashboardimg.json';
 import { useMediaQuery } from 'react-responsive';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import FilePreview from './components/document_preview';
-import LazyLoad from 'react-lazyload';
 import Lottie from 'lottie-react';
 import ShareDocumentModal from './components/share_document_modal';
+const FilePreview = React.lazy(() => import('./components/document_preview'));
 
 const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -396,9 +395,9 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                         {doc.document_extension === "txt" && <span className="bg-gray-600 text-white text-xs font-semibold px-3 py-1 rounded">{doc.document_extension}</span>}
                       </div>
 
-                        <LazyLoad height={200} offset={100}>
-                          <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
-                        </LazyLoad>
+                        <Suspense fallback={<div>Loading...</div>}>
+                        <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
+                        </Suspense>
                       </div>
   
                       <div className="document-info text-center max-w-full overflow-hidden p-2">
