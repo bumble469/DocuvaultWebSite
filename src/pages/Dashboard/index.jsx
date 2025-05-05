@@ -333,7 +333,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
               <div className="flex flex-col items-end space-y-1 w-1/2">
                 {/* Storage Usage */}
                 <div className="storage-bar w-1/3 mb-3">
-                  <p className="text-xs text-gray-600 font-medium mb-1">Usage {userFileStorage} MB / {storageLimit} MB</p>
+                  <p className="text-xs text-gray-500 font-medium mb-1">Usage {userFileStorage} MB / {storageLimit} MB</p>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
                   <div
                       className="h-1.5 rounded-full"
