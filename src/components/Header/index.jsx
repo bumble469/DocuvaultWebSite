@@ -81,7 +81,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   };
 
   return (
-    <header className={`w-full p-2 ${theme === 'dark' ? 'bg-transparent text-white' : 'bg-white border-b border-gray-200 text-gray-800'}`}>
+    <header className={`w-full p-2 ${theme === 'dark' ? 'bg-transparent text-white' : 'bg-white border-gray-200 text-gray-800'}`}>
       <div className="flex items-center px-2 justify-between w-full">
         <div className="flex items-center space-x-3">
           <img
@@ -147,7 +147,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
           {/* Profile Icon */}
           <button 
             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            className="flex items-center justify-center rounded-full overflow-hidden p-1 m-1 hover:bg-blue-100 transition-bg duration-200"
+            className={`flex items-center justify-center rounded-full overflow-hidden p-1 m-1  ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-gray-600 hover:bg-blue-100'} transition-bg duration-200`}
             style={{ height: '50px', width: '50px' }}
           >
            {userImage ? (
