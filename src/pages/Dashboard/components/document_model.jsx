@@ -7,6 +7,7 @@ const DocumentModal = ({ doc, closeModal }) => {
   const [isError, setIsError] = useState(false);
   const [isOfficeFile, setIsOfficeFile] = useState(false);
   const [loading, setLoading] = useState(true);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   if (!doc) return null;
 
@@ -67,7 +68,7 @@ const DocumentModal = ({ doc, closeModal }) => {
         setLoading(false); // Set loading to false when done
       }
     } else if (doc.document_extension === 'pptx') {
-      setDocumentContent(`<iframe src="https://docs.google.com/gview?url=http://localhost:8000/preview-document/${doc.document_name}&embedded=true" width="100%" height="100%" frameborder="0"></iframe>`);
+      setDocumentContent(`<iframe src="https://docs.google.com/gview?url=${API_URL}/preview-document/${doc.document_name}&embedded=true" width="100%" height="100%" frameborder="0"></iframe>`);
       setIsOfficeFile(true);
       setLoading(false); // Set loading to false after setting content
     } else {
@@ -133,11 +134,11 @@ const DocumentModal = ({ doc, closeModal }) => {
                 />
               ) : (
                 <iframe
-                src={`http://localhost:8000/preview-document/${doc.document_name}`}
-                type={`application/${doc.document_extension}`}
-                width="100%"
-                height="100%"
-                className="w-full h-[70vh] object-cover rounded border border-gray-300"
+                  src={`${API_URL}/preview-document/${doc.document_name}`}
+                  type={`application/${doc.document_extension}`}
+                  width="100%"
+                  height="100%"
+                  className="w-full h-[70vh] object-cover rounded border border-gray-300"
               />
               )}
               </>

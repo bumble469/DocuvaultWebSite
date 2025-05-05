@@ -204,7 +204,6 @@ body.dark .pagination p{
   color:white;
 }
 
-
 body.dark .dashboard-filters .filter-item{
   background-color:rgb(40, 40, 40) !important;
   border:black !important;
@@ -282,7 +281,8 @@ body.dark .aipage .ai-options button{
   color:rgb(225, 225, 225) !important
 }
 body.dark .aipage .ai-options button{
-  background-color:rgb(43, 43, 43) !important
+  background-color:rgb(43, 43, 43) !important;
+  border: 1px solid rgb(43, 43, 43) !important;
 }
 body.dark .aipage .ai-options button:hover{
   scale:1.04;

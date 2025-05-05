@@ -26,6 +26,8 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   const [uploadButtonTooltip, setUploadButtonTooltip] = useState("");
   const [isOpenActivityHistoryModal, setIsOpenActivityHistoryModal] = useState(false);
   const [openHelpandSupportModal, setIsOpenHelpAndSupportModal] = useState(false)
+  const [aiButton, setAIButton] = useState(false);
+  const [aiButtonTooltip, setAIButtonTooltip] = useState("");
 
   useEffect(() => {
     const checkAadharLink = async () => {
@@ -33,9 +35,12 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
         const response = await axios.post(`${API_URL}/check-user-adhar-link/`, {}, { withCredentials: true });
         if (response.data.aadhar_present === true) {
           setUploadButton(true);
+          setAIButton(true)
         } else {
           setUploadButton(false);
+          setAIButton(false)
           setUploadButtonTooltip("Please link aadhar to upload documents");
+          setAIButtonTooltip("Please link aadhar to access AI features")
         }
       } catch (error) {
         toast.error("Some error occurred");
@@ -53,7 +58,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   useEffect(()=>{
     const fetchUserImage = async () => {
       try {
-        const response = await axios.post("http://localhost:8000/users/details/", {}, { withCredentials: true });
+        const response = await axios.post(`${API_URL}/users/details/`, {}, { withCredentials: true });
         if (response.data.success === true) {
           setUserImage(response.data.user.profile_picture)
         } else {
@@ -68,7 +73,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/users/logout/', {}, { withCredentials: true });
+      const response = await axios.post(`${API_URL}/users/logout/`, {}, { withCredentials: true });
       if (response.data.success) {
         navigate('/');
         toast.success('Logout successful! Redirecting to login page...');
@@ -131,8 +136,11 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
             </button>
           </span>
 
-          {/* Notifications Icon */}
-          <button onClick={()=>navigate('/ai-document-generation')} title='use AI for your documents' className={`relative !text-sm md:!text-xl ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-yellow-600 hover:bg-blue-100'} transition-bg duration-200 p-2.5 m-1`}>
+          {/* AI Icon */}
+          <button
+            disabled={!aiButton}
+            title={!aiButton ? aiButtonTooltip : 'Explore power of ai'}
+            onClick={()=>navigate('/ai-document-generation')} className={`relative !text-sm md:!text-xl ${theme === 'dark' ? 'text-yellow-400 hover:bg-blue-800' : 'text-yellow-600 hover:bg-blue-100'} transition-bg duration-200 p-2.5 m-1`}>
             {theme === 'dark' ? <img src={aidocdark} height={25} width={25} /> : <img src={aidoclight} height={25} width={25} />}
           </button>
 
