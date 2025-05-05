@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaFilter, FaIdCard, FaHome, FaGraduationCap, FaHospital, FaBriefcase, FaFileContract, FaHandsHelping, FaRing, FaGavel, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaFilter, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import {
+  IdentificationIcon,
+  HomeIcon,
+  AcademicCapIcon,
+  HeartIcon,
+  BanknotesIcon,
+  DocumentTextIcon,
+  UsersIcon,
+  HeartIcon as LoveIcon,
+  ScaleIcon,
+} from '@heroicons/react/24/solid';
 import DocumentModal from './components/document_model';
 import noaadharlinkimage from '../../assets/images/dashboardimg.json';
 import { useMediaQuery } from 'react-responsive';
@@ -39,15 +50,15 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   ];
 
   const icons = [
-    <FaIdCard />,  // Unique Identification & Identity Proofs
-    <FaHome />,  // Address Proofs
-    <FaGraduationCap />,  // Education-related Documents
-    <FaHospital />,  // Healthcare & Medical Documents
-    <FaBriefcase />,  // Financial & Legal Documents
-    <FaFileContract />,  // Business-related Documents
-    <FaHandsHelping />,  // Government Schemes & Social Welfare Documents
-    <FaRing />,  // Marriage and Family Documents
-    <FaGavel />,  // Legal Documents
+    <IdentificationIcon className="h-6 w-6 text-blue-500" />,   // Unique ID
+    <HomeIcon className="h-6 w-6 text-green-500" />,             // Address
+    <AcademicCapIcon className="h-6 w-6 text-purple-500" />,     // Education
+    <HeartIcon className="h-6 w-6 text-red-500" />,              // Medical
+    <BanknotesIcon className="h-6 w-6 text-yellow-500" />,       // Financial/Legal
+    <DocumentTextIcon className="h-6 w-6 text-indigo-500" />,    // Business Docs
+    <UsersIcon className="h-6 w-6 text-pink-500" />,             // Gov & Welfare
+    <LoveIcon className="h-6 w-6 text-rose-500" />,              // Marriage & Family
+    <ScaleIcon className="h-6 w-6 text-gray-500" />,             // Legal
   ];
 
   useEffect(() => {
@@ -96,10 +107,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     setOpenShareDocumentModal(true);
   };
 
-  const closeShareDocModal = () => {
-    setOpenShareDocumentModal(false);
-    setCurrentShareDoc(null);
-  };
+
   const handleCheckboxChange = (type) => {
     if (selectedTypes.includes(type)) {
       setSelectedTypes(selectedTypes.filter((t) => t !== type));
@@ -193,7 +201,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     }
   };
 
-  const [sortOrder, setSortOrder] = useState("latest"); // Default is 'latest'
+  const [sortOrder, setSortOrder] = useState("latest");
 
   const handleSortChange = (order) => {
     setSortOrder(order);
@@ -243,10 +251,10 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                 {documentTypes.map((type,index) => {
                   const isSelected = selectedTypes.includes(type);
                   return (
-                    <div className={`filter-item cursor-pointer text-black flex items-center justify-center rounded-lg border-2 px-2 py-2 transition-all duration-200
+                    <div className={`filter-item cursor-pointer text-black flex items-center px-3 py-2 w-full text-sm font-medium text-gray-800 border !rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all
                       ${isSelected
                         ? '!bg-blue-600 !border-blue-700 shadow-lg transform scale-105'
-                        : 'text-gray-800 border-gray-300 hover:bg-gray-200 hover:shadow-md transform hover:scale-105'}`}>
+                        : 'text-gray-800 border-gray-300 hover:bg-gray-200 hover:shadow-md transform hover:scale-105 bg-white'}`}>
                       <div className={`filter-icons flex-0 text-left text-gray-700 ${isSelected ? '!text-white' : ''}`}>{icons[index]}</div>
                       <label
                         key={type}

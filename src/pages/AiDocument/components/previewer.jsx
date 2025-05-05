@@ -1,17 +1,14 @@
 import React from 'react';
 
-const HtmlPreviewer = ({ htmlContent, previewRef, isPreview }) => {
+const HtmlPreviewer = ({ htmlContent, previewRef}) => {
   return (
     <div className="w-full flex justify-center overflow-auto px-4">
       <div className="bg-gray-100 flex justify-center">
         <div
           ref={previewRef}
-          className="bg-white shadow-lg rounded-md"
+          className="bg-white shadow-lg rounded-md text-gray-800"
           style={{
-            width: '794px', // Ensures fixed width similar to A4 size
-            padding: '20px', // Adds padding for better readability
-            maxWidth: '100%', // Ensures responsiveness on smaller screens
-            boxSizing: 'border-box', // Ensures padding doesn't overflow the content
+            width: '100%',
           }}
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
