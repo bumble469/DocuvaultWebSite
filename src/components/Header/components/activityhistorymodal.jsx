@@ -13,9 +13,10 @@ const ActivityHistoryModal = ({ onClose }) => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    axios.post('http://localhost:8000/get-activity-history/', {}, { withCredentials: true })
+    axios.post(`${API_URL}/get-activity-history/`, {}, { withCredentials: true })
       .then((res) => {
         setActivities(res.data.activity_history);
         setLoading(false);

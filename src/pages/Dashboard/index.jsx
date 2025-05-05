@@ -34,7 +34,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openShareDocumentModal, setOpenShareDocumentModal] = useState(false);
   const [currentShareDoc, setCurrentShareDoc] = useState(null);
-
+  const [userFileStorage, setUserFileStorage] = useState();
   const itemsPerPage = 6;
 
   const documentTypes = [
@@ -61,6 +61,21 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     <ScaleIcon className="h-6 w-6 text-gray-500" />,             // Legal
   ];
 
+  const getUserStorage = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/storage-usage`, {
+        withCredentials: true
+      });
+      if (response.data.success === true) {
+        setUserFileStorage(response.data.totalStorage);
+      } else {
+        toast.error(`Some problem occurred while retrieving storage: ${response.data.message}`);
+      }
+    } catch (err) {
+      toast.error("Failed to retrieve storage");
+    }
+  };
+
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
@@ -74,9 +89,13 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
         toast.error("Failed to retrieve documents");
       }
     };
-
+    
+    getUserStorage();    
     fetchDocuments();
   }, [showUploadModal]);
+
+  const storageLimit = 100;
+  const storagePercentage = (userFileStorage / storageLimit) * 100;
 
   useEffect(() => {
     const checkAadharLink = async () => {
@@ -174,6 +193,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
         setDocuments(documents.filter(doc => doc.document_name !== documentName));
         toast.success(response.data.message);
         setShowConfirmDeleteModal(false);
+        getUserStorage();
       } else {
         toast.error(response.data.message);
       }
@@ -310,25 +330,45 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                   )}
                 </div>
               </div>
+              <div className="flex flex-col items-end space-y-1 w-1/2">
+                {/* Storage Usage */}
+                <div className="storage-bar w-1/3 mb-3">
+                  <p className="text-xs text-gray-600 font-medium mb-1">Usage {userFileStorage} MB / {storageLimit} MB</p>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                      className="h-1.5 rounded-full"
+                      style={{
+                        width: `${storagePercentage}%`,
+                        background: storagePercentage >= 100
+                          ? 'linear-gradient(to right, #ff4e50, #f9d423)' // red-orange gradient for overflow
+                          : 'linear-gradient(to right, #00c6ff, #0072ff)', // blue gradient for normal usage
+                        boxShadow: '0 0 4px rgba(0, 0, 0, 0.2)',
+                        transition: 'width 0.4s ease-in-out',
+                      }}
+                    ></div><p className='!text-xs text-gray-500'>compressed size</p>
+                  </div>
+                </div>
 
-              <div className="pagination flex items-center space-x-2">
-                <button 
-                  onClick={() => handlePageChange(currentPage - 1)} 
-                  disabled={currentPage === 1}
-                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
-                >
-                  <FaChevronLeft className="icon text-gray-800" /> 
-                </button>
-                <p className="text-gray-800 font-bold m-3">
-                  {currentPage}/{totalPages}
-                </p>
-                <button 
-                  onClick={() => handlePageChange(currentPage + 1)} 
-                  disabled={currentPage === totalPages}
-                  className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 !rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
-                >
-                  <FaChevronRight className="icon text-gray-800" /> 
-                </button>
+                {/* Pagination */}
+                <div className="pagination flex items-center space-x-2">
+                  <button 
+                    onClick={() => handlePageChange(currentPage - 1)} 
+                    disabled={currentPage === 1}
+                    className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
+                  >
+                    <FaChevronLeft className="icon text-gray-800" /> 
+                  </button>
+                  <p className="text-gray-800 font-bold m-3">
+                    {currentPage}/{totalPages}
+                  </p>
+                  <button 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    disabled={currentPage === totalPages}
+                    className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
+                  >
+                    <FaChevronRight className="icon text-gray-800" /> 
+                  </button>
+                </div>
               </div>
             </div>
   
@@ -362,7 +402,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                       </div>
   
                       <div className="document-info text-center max-w-full overflow-hidden p-2">
-                        <span className="font-bold break-words text-sm">{doc.document_name}</span>
+                        <span className="font-bold break-words text-sm">{doc.document_name}<p className="!text-xs text-gray-500">{doc.file_size_mb} MB (original size)</p></span>
                         <p className="text-xs text-gray-500">
                           {new Date(doc.date_of_upload).toLocaleDateString(undefined, {
                             year: 'numeric',
@@ -373,7 +413,6 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                             minute: '2-digit',
                           })}
                         </p>
-
                         <div className="action-icons flex justify-evenly items-center space-x-4 mt-4 overflow-x-auto">
                           <FaShareAlt
                             className="text-md cursor-pointer text-gray-400 hover:text-blue-800 transition duration-200"

@@ -25,7 +25,12 @@ const HelpandSupportModal = ({ onClose }) => {
         <div className="text-gray-800 space-y-4">
           <div>
             <h5 className="font-semibold text-lg">📄 How to Upload Documents?</h5>
-            <p>Click on the 'Upload' button from the dashboard, select your file, and hit 'Submit'. Supported formats: PDF, DOCX, XLSX, TXT, JPG, PNG, WEBP.</p>
+            <p>
+              Click on the 'Upload' button from the dashboard, select your file, and hit 'Submit'. Supported formats: PDF, DOCX, XLSX, TXT, JPG, PNG, WEBP.
+              The system supports a total document limit of <strong>100MB</strong> for uploading and storing documents. 
+              Don’t worry, that's more than enough because we compress your files before storage, significantly reducing their size. 
+              <strong> Thanks to compression, you have plenty of space to store your documents efficiently.</strong>
+            </p>        
           </div>
           <div>
             <h5 className="font-semibold text-lg">⚡ Large Files and Performance</h5>
@@ -38,6 +43,15 @@ const HelpandSupportModal = ({ onClose }) => {
           <div>
             <h5 className="font-semibold text-lg">🔁 Forgot Your Password?</h5>
             <p>Use the 'Forgot Password' link on the login page to reset your password via your registered email.</p>
+          </div>
+          <div>
+            <h5 className="font-semibold text-lg">🧠 AI Document Assistance</h5>
+            <p>
+              Our integrated AI feature allows you to interact with your documents using intelligent prompts, summaries, and suggestions. Each user is allowed up to <strong>30 AI prompts per day</strong>.
+            </p>
+            <p className="mt-2">
+              You can also generate new documents by selecting from various AI-powered templates such as letters, reports, or summaries. Once generated, these documents can be reviewed and <strong>downloaded as needed</strong>.
+            </p>
           </div>
           <div>
             <h5 className="font-semibold text-lg">📬 Need More Help?</h5>

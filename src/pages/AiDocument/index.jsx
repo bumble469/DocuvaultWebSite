@@ -11,12 +11,10 @@ import {
   PaperAirplaneIcon,
   ArrowLeftIcon
 } from '@heroicons/react/24/outline';
-
 import aidocumentanimation from '../../assets/images/aidocumentanimation.json';
 import Lottie from 'lottie-react';
 import axios from 'axios';
 import HtmlPreviewer from './components/previewer.jsx';
-import html2pdf from 'html2pdf.js';
 
 const AIDocument = () => {
   const [messages, setMessages] = useState([]);
@@ -49,7 +47,7 @@ const AIDocument = () => {
       console.error('API error:', error);
       setMessages((prev) => [...prev, { sender: 'bot', text: `Error: ${error.message}` }]);
     }finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
       setCollapsed(true)
     }
   };
@@ -66,7 +64,7 @@ const AIDocument = () => {
     ];
     setMessages(newMessages);
     setInput('');
-    handleApiCall(selectedInput + '\n' + input); // still sends both to API
+    handleApiCall(selectedInput + '\n' + input); 
   };
 
   const sidebarOptions = [
@@ -119,7 +117,7 @@ const AIDocument = () => {
     
       if (element) {
         const opt = {
-          margin: [0.5, 0.5, 0.5, 0.5], // top, left, bottom, right in inches
+          margin: [0.5, 0.5, 0.5, 0.5],
           filename: 'preview.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: {
@@ -316,7 +314,7 @@ const AIDocument = () => {
                   <button
                     key={index}
                     onClick={() => setSelectedOption(item.text)}
-                    className={`flex gap-x-2 px-3 py-2 w-full text-sm text-gray-800 text-left !rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all ${
+                    className={`flex gap-x-2 border px-3 py-2 w-full text-sm text-gray-800 text-left !rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all ${
                       selectedOption === item.text ? 'bg-blue-500' : ''
                     }`}
                   >
