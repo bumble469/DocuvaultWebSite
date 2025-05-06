@@ -198,7 +198,7 @@ const AIDocument = () => {
         
         {/* Small Screens: Responsive Stacked Layout */}
         <div className="md:hidden flex flex-col gap-4">
-          <div className="flex items-center space-x-4 ai-options p-2 !rounded-md">
+          <div className="flex items-center space-x-4 ai-options !rounded-md">
             <ArrowLeftIcon onClick={() => window.history.back()} title="go back" height={25} width={25} className="transition duration-200 hover:cursor-pointer hover:scale-104" />
             <img
               src={logo}
@@ -206,10 +206,10 @@ const AIDocument = () => {
               className="h-10 w-10 transition-transform duration-300 hover:scale-105 hover:brightness-90 cursor-pointer"
             />
             <div>
-              <h6 className="text-gray-800 font-semibold text-base leading-tight mb-1">
+              <h6 className="text-gray-800 font-semibold text-base leading-tight">
                 Explore AI-Powered Generation
               </h6>
-              <span className="text-xs text-gray-500 block mb-2">Best for Custom Document generation</span>
+              <span className="text-xs text-gray-500 block">Best for Custom Document generation</span>
             </div>
           </div>
           <hr className="border-gray-500 border-[1.5px]" />
@@ -231,7 +231,23 @@ const AIDocument = () => {
     
           {/* Center: Document Preview */}
           <div className="bg-white rounded-xl shadow-md p-4 ai-document-container">
-            <h5 className="text-xl font-bold mb-4">Your Document</h5>
+            <h5 className="text-xl font-bold mb-2">Your Document</h5>
+            {documentContent && (
+                <div className="flex gap-x-2 mb-2">
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="bg-green-600 text-white text-sm px-2 py-2 rounded-lg shadow hover:bg-green-700"
+                  >
+                    Download PDF
+                  </button>
+                  <button
+                    onClick={handleDownloadWord}
+                    className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg shadow hover:bg-blue-700"
+                  >
+                    Download Word
+                  </button>
+                </div>
+              )}
             {loading && (
               <div className="animate-pulse bg-gray-300 px-4 py-2 rounded-2xl text-sm mb-4 w-fit">
                 Generating...
