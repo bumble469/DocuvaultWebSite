@@ -15,6 +15,7 @@ import aidocumentanimation from '../../assets/images/aidocumentanimation.json';
 import Lottie from 'lottie-react';
 import axios from 'axios';
 import HtmlPreviewer from './components/previewer.jsx';
+import html2pdf from 'html2pdf.js'
 
 const AIDocument = () => {
   const [messages, setMessages] = useState([]);
