@@ -21,7 +21,6 @@ export const DocumentsProvider = ({ children }) => {
   };
 
   const getUserStorage = async () => {
-    setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/storage-usage`, {
         withCredentials: true,
@@ -37,8 +36,6 @@ export const DocumentsProvider = ({ children }) => {
       } else {
         toast.error("Failed to retrieve storage");
       }
-    } finally {
-      setLoading(false);
     }
   };
 
