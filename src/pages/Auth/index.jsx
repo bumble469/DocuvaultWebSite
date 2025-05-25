@@ -115,7 +115,6 @@ const Auth = () => {
       try {
         setIsLoading(true);
         if (isLogin) {
-          // LOGIN
           const response = await axios.post(`${API_URL}/users/login/`, {
             username: formData.username,
             password: formData.password,
