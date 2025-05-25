@@ -1,5 +1,5 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { FaShareAlt, FaDownload, FaTrash, FaChevronLeft, FaChevronRight, FaFilter, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import React, { useState, useEffect, Suspense, useContext } from 'react';
+import { FaShareAlt, FaDownload, FaTrash,FaEye, FaEyeSlash,FaChevronLeft, FaChevronRight, FaFilter, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import {
   IdentificationIcon,
   HomeIcon,
@@ -19,6 +19,7 @@ import axios from 'axios';
 import Lottie from 'lottie-react';
 import ShareDocumentModal from './components/share_document_modal';
 const FilePreview = React.lazy(() => import('./components/document_preview'));
+import { DocumentsContext } from '../../context/DocumentContext.jsx';
 
 const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -27,15 +28,14 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const API_URL = import.meta.env.VITE_API_URL;
   const [aadharPresent, setIsAadharPresent] = useState(true);
-  const [documents, setDocuments] = useState([]);
   const [showDeleteConfirmModal, setShowConfirmDeleteModal] = useState(false);
   const [docToDelete, setDocToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [openShareDocumentModal, setOpenShareDocumentModal] = useState(false);
   const [currentShareDoc, setCurrentShareDoc] = useState(null);
-  const [userFileStorage, setUserFileStorage] = useState();
   const itemsPerPage = 6;
-  const [loading, setLoading] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const { documents, loading, handleDelete, userFileStorage } = useContext(DocumentsContext);
 
   const documentTypes = [
     "Unique Identification & Identity Proofs",
@@ -60,42 +60,6 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     <LoveIcon className="h-6 w-6 text-rose-500" />,              
     <ScaleIcon className="h-6 w-6 text-gray-500" />,             
   ];
-
-  const getUserStorage = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/storage-usage`, {
-        withCredentials: true
-      });
-      if (response.data.success === true) {
-        setUserFileStorage(response.data.totalStorage);
-      } else {
-        toast.error(`Some problem occurred while retrieving storage: ${response.data.message}`);
-      }
-    } catch (err) {
-      toast.error("Failed to retrieve storage");
-    }
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    const fetchDocuments = async () => {
-      try {
-        const response = await axios.post(`${API_URL}/get-documents/`, {}, { withCredentials: true });
-        if (response.data.success === true) {
-          setDocuments(response.data.documents);
-        } else {
-          toast.error(`Some problem occurred while retrieving documents: ${response.data.message}`);
-        }
-      } catch (err) {
-        toast.error("Failed to retrieve documents");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    getUserStorage();    
-    fetchDocuments();
-  }, [showUploadModal]);
 
   const storageLimit = 100;
   const storagePercentage = (userFileStorage / storageLimit) * 100;
@@ -156,8 +120,8 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   };
 
   const filteredDocuments = selectedTypes.length === 0
-    ? documents
-    : documents.filter(doc => selectedTypes.includes(doc.document_category));
+  ? (documents || [])  
+  : (documents || []).filter(doc => selectedTypes.includes(doc.document_category));
 
   const handleDownload = (doc) => {
     if (doc.upload_data) {
@@ -186,28 +150,6 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
       link.href = doc.upload_url; 
       link.download = doc.document_name || 'document';
       link.click();
-    }
-  };
-
-  const handleDelete = async (documentName) => {
-    try {
-      const response = await axios.post(`${API_URL}/delete-documents/`, {document_name: documentName}, { withCredentials: true });
-      if (response.data.success == true) {
-        setDocuments(documents.filter(doc => doc.document_name !== documentName));
-        toast.success(response.data.message);
-        setShowConfirmDeleteModal(false);
-        getUserStorage();
-      } else {
-        toast.error(response.data.message);
-      }
-    } catch (err) {
-      if (err.response && err.response.data) {
-        toast.error(`Delete failed: ${err.response.data.detail}`);
-        console.error('Error details:', err.response.data);
-      } else {
-        toast.error("Delete failed. Please try again.");
-        console.error(err);
-      }
     }
   };
 
@@ -334,7 +276,6 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                 </div>
               </div>
               <div className="flex flex-col items-end space-y-1 w-1/2">
-                {/* Storage Usage */}
                 <div className="storage-bar w-[70%] md:w-1/3 mb-3">
                   <p className="text-xs text-gray-500 font-medium mb-1">Usage {userFileStorage} MB / {storageLimit} MB</p>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -343,8 +284,8 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                       style={{
                         width: `${storagePercentage}%`,
                         background: storagePercentage >= 100
-                          ? 'linear-gradient(to right, #ff4e50, #f9d423)' // red-orange gradient for overflow
-                          : 'linear-gradient(to right, #00c6ff, #0072ff)', // blue gradient for normal usage
+                          ? 'linear-gradient(to right, #ff4e50, #f9d423)' 
+                          : 'linear-gradient(to right, #00c6ff, #0072ff)', 
                         boxShadow: '0 0 4px rgba(0, 0, 0, 0.2)',
                         transition: 'width 0.4s ease-in-out',
                       }}
@@ -352,7 +293,6 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                   </div>
                 </div>
 
-                {/* Pagination */}
                 <div className="pagination flex items-center space-x-2">
                   <button 
                     onClick={() => handlePageChange(currentPage - 1)} 
@@ -409,44 +349,78 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                   filterDocuments([doc], searchQuery).map((doc) => (
                     <div
                       key={doc.document_name}
-                      className="pb-3 document-item hover:scale-102 transition-transform duration-200 mb-2 border rounded-lg shadow-sm hover:shadow-xl"
+                      className="pb-3 document-item hover:scale-102 transition-transform duration-200 mb-2 border rounded-lg shadow-sm hover:shadow-xl relative"
                     >
                       <div
-                        className="document-preview mb-2 relative cursor-pointer"
-                        title={`open ${doc.document_name}`}
-                        onClick={() => openModal(doc)}
+                        className="float-right z-11 relative bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-sm cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewDoc(previewDoc === doc ? null : doc);
+                        }}
                       >
-                       <div className="absolute -top-1 -left-1 rounded-bl-lg">
-                        {doc.document_extension === "pdf" && <span className="bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
-                        {doc.document_extension === "pptx" && <span className="bg-orange-700 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
-                        {["png", "jpg", "webp"].includes(doc.document_extension) && <span className="bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
-                        {(doc.document_extension === "docx" || doc.document_extension === "doc") && <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
-                        {["xlsx", "xls", "csv"].includes(doc.document_extension) && <span className="bg-green-700 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>}
-                        {doc.document_extension === "txt" && <span className="bg-gray-600 text-white text-xs font-semibold px-3 py-1 rounded">{doc.document_extension}</span>}
+                        {previewDoc === doc ? (
+                          <FaEyeSlash title="Hide Preview" className="text-xs sm:text-sm" />
+                        ) : (
+                          <FaEye title="Preview" className="text-xs sm:text-sm" />
+                        )}
                       </div>
 
-                        <Suspense fallback={<div>Loading...</div>}>
-                        <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
-                        </Suspense>
+                      <div
+                        className="document-preview mb-2 relative cursor-pointer"
+                        title={`Open ${doc.document_name}`}
+                        onClick={() => openModal(doc)}
+                      >
+                        <div className="absolute -top-1 -left-1 rounded-bl-lg pointer-events-none">
+                          {doc.document_extension === "pdf" && (
+                            <span className="bg-red-600 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>
+                          )}
+                          {doc.document_extension === "pptx" && (
+                            <span className="bg-orange-700 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>
+                          )}
+                          {["png", "jpg", "webp"].includes(doc.document_extension) && (
+                            <span className="bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>
+                          )}
+                          {(doc.document_extension === "docx" || doc.document_extension === "doc") && (
+                            <span className="bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>
+                          )}
+                          {["xlsx", "xls", "csv"].includes(doc.document_extension) && (
+                            <span className="bg-green-700 text-white text-xs font-semibold px-3 py-1 rounded-sm">{doc.document_extension}</span>
+                          )}
+                          {doc.document_extension === "txt" && (
+                            <span className="bg-gray-600 text-white text-xs font-semibold px-3 py-1 rounded">{doc.document_extension}</span>
+                          )}
+                        </div>
+
+                        {previewDoc === doc && (
+                          <Suspense fallback={<div>Loading...</div>}>
+                            <FilePreview base64String={doc.upload_data} fileType={doc.document_extension} />
+                          </Suspense>
+                        )}
                       </div>
-  
+
                       <div className="document-info text-center max-w-full overflow-hidden p-2">
-                        <span className="font-bold break-words text-sm">{doc.document_name}<p className="!text-xs text-gray-500">{doc.file_size_mb} MB (original size)</p></span>
+                        <span className="font-bold break-words text-sm">
+                          {doc.document_name}
+                          <p className="!text-xs text-gray-500">{doc.file_size_mb} MB (original size)</p>
+                        </span>
                         <p className="text-xs text-gray-500">
                           {new Date(doc.date_of_upload).toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })} • {new Date(doc.date_of_upload).toLocaleTimeString(undefined, {
-                            hour: 'numeric',
-                            minute: '2-digit',
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}{" "}
+                          •{" "}
+                          {new Date(doc.date_of_upload).toLocaleTimeString(undefined, {
+                            hour: "numeric",
+                            minute: "2-digit",
                           })}
                         </p>
+
                         <div className="action-icons flex justify-evenly items-center space-x-4 mt-4 overflow-x-auto">
                           <FaShareAlt
                             className="text-md cursor-pointer text-gray-400 hover:text-blue-800 transition duration-200"
                             title="Share"
-                            onClick={()=>openShareDocModal(doc)}
+                            onClick={() => openShareDocModal(doc)}
                           />
                           <FaDownload
                             className="text-md cursor-pointer text-gray-400 hover:text-green-800 transition duration-200"
@@ -501,7 +475,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
               </button>
               <button
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                onClick={() => handleDelete(docToDelete.document_name)}
+                onClick={() => handleDelete(docToDelete.document_name,setShowConfirmDeleteModal(false))}
               >
                 Delete
               </button>

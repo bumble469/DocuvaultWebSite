@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Lottie from 'lottie-react';
 import docuploadanimation from "../../../assets/images/docuploadanimation.json";
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { DocumentsContext } from '../../../context/DocumentContext';
+
 const UploadDocumentModal = ({ onClose }) => {
+  const { fetchDocuments, getUserStorage } = useContext(DocumentsContext);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  
   const API_URL = import.meta.env.VITE_API_URL;
-  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setSelectedFile(file);
-      console.log("File selected:", file);
     }
   };
 
@@ -26,38 +29,40 @@ const UploadDocumentModal = ({ onClose }) => {
   };
 
   const handleUpload = () => {
-    if (!selectedFile || !selectedCategory || isUploading) return;
-  
-    setIsUploading(true);
-  
+    if (!selectedFile || !selectedCategory) return;
+
+    setLoading(true);
+
     const fileName = selectedFile.name;
     const fileExtension = fileName.split('.').pop();
-  
+
     const reader = new FileReader();
     reader.onload = async function (e) {
       const buffer = e.target.result;
-  
+
       const base64String = btoa(
         new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
       );
-  
+
       const docData = {
         document_name: fileName,
         document_extension: fileExtension,
         document_category: selectedCategory,
         upload_data: base64String,
       };
-  
+
       try {
         const response = await axios.post(`${API_URL}/upload-document/`, docData, {
           withCredentials: true,
         });
-  
+
         if (response.data.success === true) {
           toast.success("Document Saved!");
           setSelectedFile(null);
           setSelectedCategory("");
           onClose();
+          fetchDocuments();
+          getUserStorage();
         } else {
           toast.error(`Failed to upload document! ${response.data.message}`);
         }
@@ -70,12 +75,12 @@ const UploadDocumentModal = ({ onClose }) => {
           console.error(err);
         }
       } finally {
-        setIsUploading(false);
+        setLoading(false);
       }
     };
-  
+
     reader.readAsArrayBuffer(selectedFile);
-  };  
+  };
 
   const categoryOptions = [
     "Unique Identification & Identity Proofs",
@@ -97,7 +102,7 @@ const UploadDocumentModal = ({ onClose }) => {
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
       }}
     >
-      <div className="upload-doc-modal bg-white w-lg max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg shadow-lg p-4">
+      <div className="upload-doc-modal bg-white w-lg max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg shadow-lg p-4 relative">
         <div className="flex justify-between items-center">
           <p className="text-xl font-bold">Upload Document</p>
           <button
@@ -159,15 +164,41 @@ const UploadDocumentModal = ({ onClose }) => {
 
           <button
             onClick={handleUpload}
-            disabled={!selectedFile || !selectedCategory}
-            className={`px-4 py-2 rounded text-white ${
-              selectedFile && selectedCategory
+            disabled={!selectedFile || !selectedCategory || loading}
+            className={`px-4 py-2 rounded text-white flex items-center justify-center ${
+              selectedFile && selectedCategory && !loading
                 ? 'bg-blue-500 hover:bg-blue-600'
                 : 'bg-gray-400 cursor-not-allowed'
             }`}
           >
-            Upload
+            {loading ? (
+              <svg
+                className="animate-spin h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                role="status"
+                aria-label="Loading"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M12 2a10 10 0 00-7.07 17.07l1.41-1.41A8 8 0 1120 12h2a10 10 0 00-10-10z"
+                />
+              </svg>
+            ) : (
+              'Upload'
+            )}
           </button>
+
         </div>
       </div>
     </div>

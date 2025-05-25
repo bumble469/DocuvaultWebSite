@@ -14,6 +14,7 @@ import ProfileModal from './components/profilemodal.jsx';
 import UploadDocumentModal from './components/uploadmodal.jsx';
 import ActivityHistoryModal from './components/activityhistorymodal.jsx';
 import HelpandSupportModal from './components/helpandsupportmodal.jsx';
+import { DocumentsContext } from '../../context/DocumentContext.jsx';
 
 const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUploadModal, setShowUploadModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -28,6 +29,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   const [openHelpandSupportModal, setIsOpenHelpAndSupportModal] = useState(false)
   const [aiButton, setAIButton] = useState(false);
   const [aiButtonTooltip, setAIButtonTooltip] = useState("");
+  const { clearContext } = useContext(DocumentsContext);
 
   useEffect(() => {
     const checkAadharLink = async () => {
@@ -76,6 +78,7 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
       const response = await axios.post(`${API_URL}/users/logout/`, {}, { withCredentials: true });
       if (response.data.success) {
         navigate('/');
+        clearContext();
         toast.success('Logout successful! Redirecting to login page...');
       } else {
         toast.error(`Logout failed: ${response.data.message}. Please try again.`);
