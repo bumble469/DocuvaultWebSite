@@ -15,7 +15,6 @@ export const DocumentsProvider = ({ children }) => {
     setDocuments(null);
     setUserFileStorage(null);
     setLoading(false);
-    toast.error('Session expired. Please login again.');
   };
 
   const getUserStorage = async () => {
