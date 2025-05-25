@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Eye, EyeOff, X } from 'lucide-react';
 import docuvaultimage from '../../assets/images/docuvaultimage.jpg';
 import logoimage from '../../assets/images/logowithtext.png';
@@ -6,7 +6,7 @@ import OTPModal from './components/otpmodal';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
-
+import { DocumentsContext } from '../../context/DocumentContext';
 const Auth = () => {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +16,8 @@ const Auth = () => {
   const openModal = () => { setIsModalOpen(true) };
   const closeModal = () => { setIsModalOpen(false) };
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshData } = useContext(DocumentsContext);
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -126,7 +128,7 @@ const Auth = () => {
           });
           if (response.data.success) {
             toast.success('Login successful! 🎉');
-            const token = response.data.access_token;
+            refreshData();
             setIsLoading(false);
             setFormData(prev => ({ ...prev, fullName: '', email: '', username: '', password: '', confirmPassword: '' }));
             navigate('/dashboard');

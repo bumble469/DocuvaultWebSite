@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useLocation } from 'react-router-dom';
 
 export const DocumentsContext = createContext();
 
@@ -9,12 +10,14 @@ export const DocumentsProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [userFileStorage, setUserFileStorage] = useState(null);
 
+  const location = useLocation();
   const API_URL = import.meta.env.VITE_API_URL;
 
   const clearContext = () => {
     setDocuments(null);
     setUserFileStorage(null);
     setLoading(false);
+    toast.error("Session expired! Please login again..");
   };
 
   const getUserStorage = async () => {
@@ -100,12 +103,19 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
+  const refreshData = () => {
+    getUserStorage();
+    fetchDocuments();
+  };
+
   useEffect(() => {
-    if (!documents) {
+    const publicRoutes = ['/'];
+
+    if (!documents && !publicRoutes.includes(location.pathname)) {
       getUserStorage();
       fetchDocuments();
     }
-  }, [documents]);
+  }, [documents, location.pathname]);
 
   return (
     <DocumentsContext.Provider
@@ -117,6 +127,7 @@ export const DocumentsProvider = ({ children }) => {
         getUserStorage,
         handleDelete,
         clearContext,
+        refreshData,
       }}
     >
       {children}
