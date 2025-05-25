@@ -35,6 +35,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [currentShareDoc, setCurrentShareDoc] = useState(null);
   const [userFileStorage, setUserFileStorage] = useState();
   const itemsPerPage = 6;
+  const [loading, setLoading] = useState(false);
 
   const documentTypes = [
     "Unique Identification & Identity Proofs",
@@ -49,15 +50,15 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   ];
 
   const icons = [
-    <IdentificationIcon className="h-6 w-6 text-blue-500" />,   // Unique ID
-    <HomeIcon className="h-6 w-6 text-green-500" />,             // Address
-    <AcademicCapIcon className="h-6 w-6 text-purple-500" />,     // Education
-    <HeartIcon className="h-6 w-6 text-red-500" />,              // Medical
-    <BanknotesIcon className="h-6 w-6 text-yellow-500" />,       // Financial/Legal
-    <DocumentTextIcon className="h-6 w-6 text-indigo-500" />,    // Business Docs
-    <UsersIcon className="h-6 w-6 text-pink-500" />,             // Gov & Welfare
-    <LoveIcon className="h-6 w-6 text-rose-500" />,              // Marriage & Family
-    <ScaleIcon className="h-6 w-6 text-gray-500" />,             // Legal
+    <IdentificationIcon className="h-6 w-6 text-blue-500" />,  
+    <HomeIcon className="h-6 w-6 text-green-500" />,             
+    <AcademicCapIcon className="h-6 w-6 text-purple-500" />,     
+    <HeartIcon className="h-6 w-6 text-red-500" />,              
+    <BanknotesIcon className="h-6 w-6 text-yellow-500" />,       
+    <DocumentTextIcon className="h-6 w-6 text-indigo-500" />,    
+    <UsersIcon className="h-6 w-6 text-pink-500" />,             
+    <LoveIcon className="h-6 w-6 text-rose-500" />,              
+    <ScaleIcon className="h-6 w-6 text-gray-500" />,             
   ];
 
   const getUserStorage = async () => {
@@ -76,6 +77,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   };
 
   useEffect(() => {
+    setLoading(true);
     const fetchDocuments = async () => {
       try {
         const response = await axios.post(`${API_URL}/get-documents/`, {}, { withCredentials: true });
@@ -86,6 +88,8 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
         }
       } catch (err) {
         toast.error("Failed to retrieve documents");
+      } finally {
+        setLoading(false);
       }
     };
     
@@ -372,7 +376,33 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
             </div>
   
             <div className="documents-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {sortedDocuments.length === 0 ? (
+              {loading ? (
+                <div className={`flex items-center justify-center absolute ${isMobile ? 'top-[50%] left-[50%]' : 'top-[60%] left-[60%]'} transform -translate-x-1/2 -translate-y-1/2`}>
+                  <svg
+                    className="animate-spin h-8 w-8 text-blue-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    role="status"
+                    aria-label="Loading"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M12 2a10 10 0 00-7.07 17.07l1.41-1.41A8 8 0 1120 12h2a10 10 0 00-10-10z"
+                    />
+                  </svg>
+                </div>
+
+              ) : sortedDocuments.length === 0 ? (
                 <p>No documents available.</p>
               ) : (
                 sortedDocuments.flatMap((doc) =>
