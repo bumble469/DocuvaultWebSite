@@ -49,17 +49,9 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
-
-# ======================
-# Cache / tooling
-# ======================
 .cache/
 .eslintcache
 .stylelintcache
-
-# ======================
-# Optional (if used)
-# ======================
 pnpm-lock.yaml
 yarn.lock
 npm-shrinkwrap.json
