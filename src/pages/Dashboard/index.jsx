@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useContext } from 'react';
-import { FaShareAlt, FaDownload, FaTrash,FaEye, FaEyeSlash,FaChevronLeft, FaChevronRight, FaFilter, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaShareAlt, FaDownload, FaTrash, FaEye, FaEyeSlash, FaChevronLeft, FaChevronRight, FaFilter, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import {
   IdentificationIcon,
   HomeIcon,
@@ -15,11 +15,11 @@ import DocumentModal from './components/document_model';
 import noaadharlinkimage from '../../assets/images/dashboardimg.json';
 import { useMediaQuery } from 'react-responsive';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import Lottie from 'lottie-react';
 import ShareDocumentModal from './components/share_document_modal';
 const FilePreview = React.lazy(() => import('./components/document_preview'));
 import { DocumentsContext } from '../../context/DocumentContext.jsx';
+import refreshApi from '../../utils/refreshApi.js';
 
 const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
@@ -50,15 +50,15 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   ];
 
   const icons = [
-    <IdentificationIcon className="h-6 w-6 text-blue-500" />,  
-    <HomeIcon className="h-6 w-6 text-green-500" />,             
-    <AcademicCapIcon className="h-6 w-6 text-purple-500" />,     
-    <HeartIcon className="h-6 w-6 text-red-500" />,              
-    <BanknotesIcon className="h-6 w-6 text-yellow-500" />,       
-    <DocumentTextIcon className="h-6 w-6 text-indigo-500" />,    
-    <UsersIcon className="h-6 w-6 text-pink-500" />,             
-    <LoveIcon className="h-6 w-6 text-rose-500" />,              
-    <ScaleIcon className="h-6 w-6 text-gray-500" />,             
+    <IdentificationIcon className="h-6 w-6 text-blue-500" />,
+    <HomeIcon className="h-6 w-6 text-green-500" />,
+    <AcademicCapIcon className="h-6 w-6 text-purple-500" />,
+    <HeartIcon className="h-6 w-6 text-red-500" />,
+    <BanknotesIcon className="h-6 w-6 text-yellow-500" />,
+    <DocumentTextIcon className="h-6 w-6 text-indigo-500" />,
+    <UsersIcon className="h-6 w-6 text-pink-500" />,
+    <LoveIcon className="h-6 w-6 text-rose-500" />,
+    <ScaleIcon className="h-6 w-6 text-gray-500" />,
   ];
 
   const storageLimit = 100;
@@ -67,7 +67,11 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   useEffect(() => {
     const checkAadharLink = async () => {
       try {
-        const response = await axios.post(`${API_URL}/check-user-adhar-link/`, {}, { withCredentials: true });
+        const response = await refreshApi("/check-user-adhar-link/", {
+          method: "POST",
+          data: {}
+        });
+        if (!response) return;
         setIsAadharPresent(response.data.aadhar_present === true);
       } catch (error) {
         toast.error("Some error occurred");
@@ -120,34 +124,34 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
   };
 
   const filteredDocuments = selectedTypes.length === 0
-  ? (documents || [])  
-  : (documents || []).filter(doc => selectedTypes.includes(doc.document_category));
+    ? (documents || [])
+    : (documents || []).filter(doc => selectedTypes.includes(doc.document_category));
 
   const handleDownload = (doc) => {
     if (doc.upload_data) {
       const byteCharacters = atob(doc.upload_data);
       const byteArrays = [];
-  
+
       for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
         const slice = byteCharacters.slice(offset, offset + 1024);
         const byteNumbers = new Array(slice.length);
-  
+
         for (let i = 0; i < slice.length; i++) {
           byteNumbers[i] = slice.charCodeAt(i);
         }
-  
+
         const byteArray = new Uint8Array(byteNumbers);
         byteArrays.push(byteArray);
       }
-  
+
       const blob = new Blob(byteArrays, { type: doc.document_extension });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = doc.document_name || 'document';
-      link.click(); 
+      link.click();
     } else {
       const link = document.createElement('a');
-      link.href = doc.upload_url; 
+      link.href = doc.upload_url;
       link.download = doc.document_name || 'document';
       link.click();
     }
@@ -157,7 +161,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-  
+
   const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
 
   const handlePageChange = (page) => {
@@ -177,7 +181,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     const dateB = new Date(b.date_of_upload);
 
     if (sortOrder === "latest") {
-      return dateB - dateA; 
+      return dateB - dateA;
     } else {
       return dateA - dateB;
     }
@@ -188,61 +192,61 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
     <div className="dashboard flex flex-col md:flex-row px-2">
       {aadharPresent ? (
         <>
-        {isMobile && (
-          <select
-            onChange={(e) => handleSelectChange(e.target.value)}
-            className="mobile-form-select w-full border p-2 rounded-md text-sm"
-            value={selectedTypes[0] || ""}
-          >
-            <option value="None">None</option>
-            {documentTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        )}
+          {isMobile && (
+            <select
+              onChange={(e) => handleSelectChange(e.target.value)}
+              className="mobile-form-select w-full border p-2 rounded-md text-sm"
+              value={selectedTypes[0] || ""}
+            >
+              <option value="None">None</option>
+              {documentTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          )}
 
-        {!isMobile && (
-          <div className="dashboard-filters md:w-1/5 w-full flex-none rounded-xl shadow-md p-3 md:p-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex flex-col space-y-4">
-              <div className="flex items-center gap-2">
-                <FaFilter className="text-lg text-gray-600" />
-                <h5 className="text-md font-bold text-gray-800">Filters</h5>
-              </div>
+          {!isMobile && (
+            <div className="dashboard-filters md:w-1/5 w-full flex-none rounded-xl shadow-md p-3 md:p-4 max-h-[85vh] overflow-y-auto">
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center gap-2">
+                  <FaFilter className="text-lg text-gray-600" />
+                  <h5 className="text-md font-bold text-gray-800">Filters</h5>
+                </div>
 
-              {/* Filter Options */}
-              <div className="filter-item-container flex flex-col space-y-2 text-left">
-                {documentTypes.map((type,index) => {
-                  const isSelected = selectedTypes.includes(type);
-                  return (
-                    <div className={`filter-item cursor-pointer text-black flex items-center px-3 py-2 w-full text-sm font-medium text-gray-800 border !rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all
+                {/* Filter Options */}
+                <div className="filter-item-container flex flex-col space-y-2 text-left">
+                  {documentTypes.map((type, index) => {
+                    const isSelected = selectedTypes.includes(type);
+                    return (
+                      <div className={`filter-item cursor-pointer text-black flex items-center px-3 py-2 w-full text-sm font-medium text-gray-800 border !rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all
                       ${isSelected
-                        ? '!bg-blue-600 !border-blue-700 shadow-lg transform scale-105'
-                        : 'text-gray-800 border-gray-300 hover:bg-gray-200 hover:shadow-md transform hover:scale-105 bg-white'}`}>
-                      <div className={`filter-icons flex-0 text-left text-gray-700 ${isSelected ? '!text-white' : ''}`}>{icons[index]}</div>
-                      <label
-                        key={type}
-                        htmlFor={type}
-                        className={`ml-2 flex-1 text-black ${isSelected ? '!text-white' : ' '}`}
-                      >
-                        <input
-                          type="checkbox"
-                          id={type}
-                          checked={isSelected}
-                          onChange={() => handleCheckboxChange(type)}
-                          className="hidden"
-                        />
-                        
-                        <span className="text-sm font-medium">{type}</span>
-                      </label>
-                    </div>
-                  );
-                })}
+                          ? '!bg-blue-600 !border-blue-700 shadow-lg transform scale-105'
+                          : 'text-gray-800 border-gray-300 hover:bg-gray-200 hover:shadow-md transform hover:scale-105 bg-white'}`}>
+                        <div className={`filter-icons flex-0 text-left text-gray-700 ${isSelected ? '!text-white' : ''}`}>{icons[index]}</div>
+                        <label
+                          key={type}
+                          htmlFor={type}
+                          className={`ml-2 flex-1 text-black ${isSelected ? '!text-white' : ' '}`}
+                        >
+                          <input
+                            type="checkbox"
+                            id={type}
+                            checked={isSelected}
+                            onChange={() => handleCheckboxChange(type)}
+                            className="hidden"
+                          />
+
+                          <span className="text-sm font-medium">{type}</span>
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
           <div className="dashboard-documents right-section flex-1 ml-0 md:ml-6 max-h-[70vh] sm:max-h-[75vh] md:max-h-[85vh] overflow-y-auto p-2">
             <div className="flex flex-row mb-2 justify-between items-center">
@@ -257,17 +261,17 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                         onClick={() => handleSortChange("oldest")}
                         aria-label="Sort by oldest to latest"
                       >
-                      <FaArrowDown />
-                    </button>
+                        <FaArrowDown />
+                      </button>
                     </>
                   )}
                   {sortOrder === "oldest" && (
-                   <>
+                    <>
                       <span className="text-sm text-gray-700">Oldest to Latest</span>
                       <button
-                      className="p-2 cursor-pointer text-gray-700 hover:text-gray-900"
-                      onClick={() => handleSortChange("latest")}
-                      aria-label="Sort by latest to oldest"
+                        className="p-2 cursor-pointer text-gray-700 hover:text-gray-900"
+                        onClick={() => handleSortChange("latest")}
+                        aria-label="Sort by latest to oldest"
                       >
                         <FaArrowUp />
                       </button>
@@ -279,13 +283,13 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                 <div className="storage-bar w-[70%] md:w-1/3 mb-3">
                   <p className="text-xs text-gray-500 font-medium mb-1">Usage {userFileStorage} MB / {storageLimit} MB</p>
                   <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
+                    <div
                       className="h-1.5 rounded-full"
                       style={{
                         width: `${storagePercentage}%`,
                         background: storagePercentage >= 100
-                          ? 'linear-gradient(to right, #ff4e50, #f9d423)' 
-                          : 'linear-gradient(to right, #00c6ff, #0072ff)', 
+                          ? 'linear-gradient(to right, #ff4e50, #f9d423)'
+                          : 'linear-gradient(to right, #00c6ff, #0072ff)',
                         boxShadow: '0 0 4px rgba(0, 0, 0, 0.2)',
                         transition: 'width 0.4s ease-in-out',
                       }}
@@ -294,27 +298,27 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
                 </div>
 
                 <div className="pagination flex items-center space-x-2">
-                  <button 
-                    onClick={() => handlePageChange(currentPage - 1)} 
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
                     className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
                   >
-                    <FaChevronLeft className="icon text-gray-800" /> 
+                    <FaChevronLeft className="icon text-gray-800" />
                   </button>
                   <p className="text-gray-800 font-bold m-3">
                     {currentPage}/{totalPages}
                   </p>
-                  <button 
-                    onClick={() => handlePageChange(currentPage + 1)} 
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className="cursor-pointer bg-gray-100 hover:bg-gray-300 text-white p-2 rounded-md flex items-center transition-all duration-200 disabled:opacity-50"
                   >
-                    <FaChevronRight className="icon text-gray-800" /> 
+                    <FaChevronRight className="icon text-gray-800" />
                   </button>
                 </div>
               </div>
             </div>
-  
+
             <div className="documents-list grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {loading ? (
                 <div className={`flex items-center justify-center absolute ${isMobile ? 'top-[50%] left-[50%]' : 'top-[60%] left-[60%]'} transform -translate-x-1/2 -translate-y-1/2`}>
@@ -450,12 +454,12 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
           <Lottie animationData={noaadharlinkimage} />
         </div>
       )}
-  
+
       {isModalOpen && (
         <DocumentModal doc={currentDoc} closeModal={closeModal} />
       )}
       {openShareDocumentModal && (
-        <ShareDocumentModal onClose={()=>setOpenShareDocumentModal(false)} doc={currentShareDoc}/>
+        <ShareDocumentModal onClose={() => setOpenShareDocumentModal(false)} doc={currentShareDoc} />
       )}
       {showDeleteConfirmModal && docToDelete && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -475,7 +479,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
               </button>
               <button
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                onClick={() => handleDelete(docToDelete.document_name,setShowConfirmDeleteModal(false))}
+                onClick={() => handleDelete(docToDelete.document_name, setShowConfirmDeleteModal(false))}
               >
                 Delete
               </button>
@@ -484,7 +488,7 @@ const Dashboard = ({ searchQuery, showProfileModal, showUploadModal }) => {
         </div>
       )}
     </div>
-  );  
+  );
 };
 
 export default Dashboard;

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import dummyimg from "../../../assets/images/dummyimg.png"
 import { toast } from 'react-toastify';
 import editimageicon from "../../../assets/images/editimageicon.png";
 import { useNavigate } from 'react-router-dom';
+import refreshApi from '../../../utils/refreshApi.js';
 
 const ProfileModal = ({ onClose }) => {
   const [userData, setUserData] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [errors, setErrors] = useState({ email: '', aadhar_number: '' });
-  const API_URL = import.meta.env.VITE_API_URL;
   const [originalEmail, setOriginEmail] = useState();
   const [otpVerificationModal, setOtpVerificationModal] = useState(false);
   const [otp, setOtp] = useState('');
@@ -20,7 +19,11 @@ const ProfileModal = ({ onClose }) => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.post(`${API_URL}/users/details/`, {}, { withCredentials: true });
+      const response = await refreshApi(`/users/details/`, {
+        method: "POST",
+        data: {}
+      });
+      if (!response) return;
       if (response.data.success === true) {
         setUserData({
           full_name: response.data.user.full_name,
@@ -128,24 +131,26 @@ const ProfileModal = ({ onClose }) => {
         const isEmailUpdated = userData.email !== originalEmail;
 
         if (isEmailUpdated) {
-          const otpResponse = await axios.post(
-            `${API_URL}/users/update/send_otp/`,
-            { user_email: userData.email },
-            { withCredentials: true }
-          );
+          const otpResponse = await refreshApi("/users/update/send_otp/", {
+            method: "POST",
+            data: { user_email: userData.email }
+          });
+
+          if (!otpResponse) return;
 
           if (otpResponse.data.success) {
-              setOtpVerificationModal(true);
+            setOtpVerificationModal(true);
           } else {
             toast.error("Failed to send OTP. Please try again.");
           }
         } else {
-          const response = await axios.post(
-            `${API_URL}/users/update/`,
-            { ...userData },
-            { withCredentials: true }
-          );
-  
+          const response = await refreshApi("/users/update/", {
+            method: "POST",
+            data: { ...userData }
+          });
+
+          if (!response) return;
+
           if (response.data.success) {
             toast.success(`Profile Updated! ${response.data.message}`);
           } else {
@@ -160,18 +165,20 @@ const ProfileModal = ({ onClose }) => {
 
   const handleOtpSubmit = async () => {
     try {
-      const verifyOtpResponse = await axios.post(
-        `${API_URL}/users/update/verify_otp/`,
-        { user_email: userData.email, otp },
-        { withCredentials: true }
-      );
+      const verifyOtpResponse = await refreshApi("/users/update/verify_otp/", {
+        method: "POST",
+        data: { user_email: userData.email, otp }
+      });
+
+      if (!verifyOtpResponse) return;
 
       if (verifyOtpResponse.data.success) {
-        const response = await axios.post(
-          `${API_URL}/users/update/`,
-          { ...userData },
-          { withCredentials: true }
-        );
+        const response = await refreshApi("/users/update/", {
+          method: "POST",
+          data: { ...userData }
+        });
+
+        if (!response) return;
 
         if (response.data.success) {
           toast.success(`Profile Updated! ${response.data.message}`);
@@ -187,28 +194,38 @@ const ProfileModal = ({ onClose }) => {
     }
   };
 
-  const handleDeleteClick = async(password) => {
-    try{
-      const res1 = await axios.post(`${API_URL}/users/delete/checkpassword/`,{password},{withCredentials:true});
-      if(res1.data.success == true){
-        const response = await axios.post(`${API_URL}/users/delete/`,{},{withCredentials:true});
-        if(response.data.success == true){
+  const handleDeleteClick = async (password) => {
+    try {
+      const res1 = await refreshApi("/users/delete/checkpassword/", {
+        method: "POST",
+        data: { password }
+      });
+
+      if (!res1) return;
+
+      if (res1.data.success === true) {
+        const response = await refreshApi("/users/delete/", {
+          method: "POST",
+          data: {}
+        });
+
+        if (!response) return;
+
+        if (response.data.success === true) {
           setShowDeleteModal(false);
-          setPassword('')
+          setPassword('');
           toast.info("Account has been terminated! Thakyou for using our platform :)");
           navigate("/");
+        } else {
+          toast.error(`Could not terminate account: ${response.data.message}`);
         }
-        else{
-          toast.error(`Could not terminate accound: ${response.data.message}`);
-        }
-      }else{
-        toast.error(`Error: ${response.data.message}`);
+      } else {
+        toast.error(`Error: ${res1.data.message}`);  // fixed: was using response which was undefined
       }
-    }
-    catch(err){
+    } catch (err) {
       console.log(err);
     }
-  }
+  };
 
   return (
   <div

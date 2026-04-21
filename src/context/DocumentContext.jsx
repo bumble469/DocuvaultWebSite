@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useLocation } from 'react-router-dom';
+import refreshApi from '../utils/refreshApi.js';
 
 export const DocumentsContext = createContext();
 
@@ -21,11 +21,12 @@ export const DocumentsProvider = ({ children }) => {
 
   const getUserStorage = async () => {
     try {
-      const response = await axios.get(`${API_URL}/storage-usage`, {
-        withCredentials: true,
+      const response = await refreshApi("/storage-usage", {
+        method: "GET"
       });
-      if (response.data.success === true) {
-        setUserFileStorage(response.data.totalStorage);
+      if (!response) return;
+      if (response.status === 200 || response.data.status == 200) {
+        setUserFileStorage(response.data);
       } else {
         toast.error(`Some problem occurred while retrieving storage: ${response.data.message}`);
       }
@@ -41,11 +42,10 @@ export const DocumentsProvider = ({ children }) => {
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${API_URL}/get-documents/`,
-        {},
-        { withCredentials: true }
-      );
+      const response = await refreshApi("/get-documents/", {
+        method: "POST",
+      });
+      if (!response) return;
       if (response.data.success === true) {
         setDocuments(response.data.documents);
       } else {
@@ -64,11 +64,11 @@ export const DocumentsProvider = ({ children }) => {
 
   const handleDelete = async (documentName, onClose) => {
     try {
-      const response = await axios.post(
-        `${API_URL}/delete-documents/`,
-        { document_name: documentName },
-        { withCredentials: true }
-      );
+      const response = await refreshApi("/delete-documents/", {
+        method: "POST",
+        data: { document_name: documentName }
+      });
+      if (!response) return;
       if (response.data.success === true) {
         toast.success(response.data.message);
         getUserStorage();

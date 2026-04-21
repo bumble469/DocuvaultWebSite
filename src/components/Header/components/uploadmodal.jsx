@@ -2,8 +2,8 @@ import React, { useState, useContext } from 'react';
 import Lottie from 'lottie-react';
 import docuploadanimation from "../../../assets/images/docuploadanimation.json";
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import { DocumentsContext } from '../../../context/DocumentContext';
+import refreshApi from '../../../utils/refreshApi';
 
 const UploadDocumentModal = ({ onClose }) => {
   const { fetchDocuments, getUserStorage } = useContext(DocumentsContext);
@@ -11,8 +11,6 @@ const UploadDocumentModal = ({ onClose }) => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const API_URL = import.meta.env.VITE_API_URL;
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -52,9 +50,12 @@ const UploadDocumentModal = ({ onClose }) => {
       };
 
       try {
-        const response = await axios.post(`${API_URL}/upload-document/`, docData, {
-          withCredentials: true,
+        const response = await refreshApi("/upload-document/", {
+          method: "POST",
+          data: docData
         });
+
+        if (!response) return;
 
         if (response.data.success === true) {
           toast.success("Document Saved!");

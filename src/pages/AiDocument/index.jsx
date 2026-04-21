@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import aidocumentanimation from '../../assets/images/aidocumentanimation.json';
 import Lottie from 'lottie-react';
-import axios from 'axios';
+import refreshApi from '../../utils/refreshApi.js';
 import HtmlPreviewer from './components/previewer.jsx';
 import html2pdf from 'html2pdf.js'
 
@@ -28,15 +28,15 @@ const AIDocument = () => {
 
 
   const handleApiCall = async (finalInput) => {
-    const apiUrl = `${API_URL}/generate/`;
     const data = { task: selectedOption, content: finalInput };
     setLoading(true);
     try {
-      const response = await axios.post(apiUrl, data, {
+      const response = await refreshApi('/generate/', {
+        method: "POST",
+        data, 
         headers: {
-          'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         },
-        withCredentials: true,
       });
   
       const generatedText =

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import {
   FaSignInAlt,
   FaSignOutAlt,
@@ -8,23 +7,29 @@ import {
   FaExclamationCircle,
   FaHistory
 } from 'react-icons/fa';
+import refreshApi from '../../../utils/refreshApi.js';
 
 const ActivityHistoryModal = ({ onClose }) => {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    axios.post(`${API_URL}/get-activity-history/`, {}, { withCredentials: true })
-      .then((res) => {
+    const fetchActivity = async () => {
+      try {
+        const res = await refreshApi("/get-activity-history/", {
+          method: "POST",
+          data: {}
+        });
+        if (!res) return;
         setActivities(res.data.activity_history);
         setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         setError("Failed to load activity history.");
         setLoading(false);
-      });
+      }
+    };
+    fetchActivity();
   }, []);
 
   const getActivityIcon = (type) => {

@@ -8,13 +8,13 @@ import aidocdark from '../../assets/images/ai-doc-dark.png';
 import { useMediaQuery } from 'react-responsive';
 import ThemeContext from '../../context/ThemeContext.jsx';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import ProfileModal from './components/profilemodal.jsx';
 import UploadDocumentModal from './components/uploadmodal.jsx';
 import ActivityHistoryModal from './components/activityhistorymodal.jsx';
 import HelpandSupportModal from './components/helpandsupportmodal.jsx';
 import { DocumentsContext } from '../../context/DocumentContext.jsx';
+import refreshApi from '../../utils/refreshApi.js';
 
 const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUploadModal, setShowUploadModal }) => {
   const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
@@ -34,15 +34,19 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
   useEffect(() => {
     const checkAadharLink = async () => {
       try {
-        const response = await axios.post(`${API_URL}/check-user-adhar-link/`, {}, { withCredentials: true });
+        const response = await refreshApi("/check-user-adhar-link/", {
+          method: "POST",
+          data: {}
+        });
+        if (!response) return;
         if (response.data.aadhar_present === true) {
           setUploadButton(true);
-          setAIButton(true)
+          setAIButton(true);
         } else {
           setUploadButton(false);
-          setAIButton(false)
+          setAIButton(false);
           setUploadButtonTooltip("Please link aadhar to upload documents");
-          setAIButtonTooltip("Please link aadhar to access AI features")
+          setAIButtonTooltip("Please link aadhar to access AI features");
         }
       } catch (error) {
         toast.error("Some error occurred");
@@ -51,18 +55,22 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
     };
     checkAadharLink();
   }, [showProfileModal]);
-  
+
   const navigate = useNavigate();
   const toggleDarkMode = () => {
     toggleTheme();
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchUserImage = async () => {
       try {
-        const response = await axios.post(`${API_URL}/users/details/`, {}, { withCredentials: true });
+        const response = await refreshApi("/users/details/", {
+          method: "POST",
+          data: {}
+        });
+        if (!response) return;
         if (response.data.success === true) {
-          setUserImage(response.data.user.profile_picture)
+          setUserImage(response.data.user.profile_picture);
         } else {
           console.log("Failed with status:", response.data.status);
         }
@@ -70,12 +78,16 @@ const Header = ({ setSearchQuery, showProfileModal, setShowProfileModal, showUpl
         console.error("Error fetching user data:", error);
       }
     };
-    fetchUserImage()
-  },[showProfileModal])
+    fetchUserImage();
+  }, [showProfileModal]);
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(`${API_URL}/users/logout/`, {}, { withCredentials: true });
+      const response = await refreshApi("/users/logout/", {
+        method: "POST",
+        data: {}
+      });
+      if (!response) return;
       if (response.data.success) {
         navigate('/');
         clearContext();
