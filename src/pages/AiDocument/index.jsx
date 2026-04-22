@@ -45,9 +45,18 @@ const AIDocument = () => {
       setDocumentContent(generatedText);
       setMessages((prev) => [...prev, { sender: 'bot', text: generatedText }]);
     } catch (error) {
-      console.error('API error:', error);
-      setMessages((prev) => [...prev, { sender: 'bot', text: `Error: ${error.message}` }]);
-    }finally {
+      const detail = error.response?.data?.detail || '';
+      let errorMessage = 'Something went wrong. Please try again.';
+      if (detail.includes('503') || detail.includes('UNAVAILABLE') || detail.includes('high demand')) {
+        errorMessage = 'AI service is currently busy. Please try again in a moment.';
+      } else if (detail.includes('429') || detail.includes('quota') || detail.includes('RESOURCE_EXHAUSTED')) {
+        errorMessage = 'AI quota exceeded. Please try again later.';
+      } else if (detail.includes('401')) {
+        errorMessage = 'Session expired. Please log in again.';
+      }
+
+      setMessages((prev) => [...prev, { sender: 'bot', text: errorMessage }]);
+    } finally {
       setLoading(false);
       setCollapsed(true)
     }
@@ -195,32 +204,37 @@ const AIDocument = () => {
 
     return (
       <div className="aipage h-screen bg-gray-100 font-sans p-4 overflow-y-auto">
-        
-        {/* Small Screens: Responsive Stacked Layout */}
+
+        {/* Small Screens */}
         <div className="md:hidden flex flex-col gap-4">
-          <div className="flex items-center space-x-4 ai-options !rounded-md">
-            <ArrowLeftIcon onClick={() => window.history.back()} title="go back" height={25} width={25} className="transition duration-200 hover:cursor-pointer hover:scale-104" />
+          <div className="flex items-center space-x-4 ai-options !rounded-xl p-3 shadow-sm border border-gray-200 bg-white">
+            <ArrowLeftIcon
+              onClick={() => window.history.back()}
+              title="go back"
+              height={22}
+              width={22}
+              className="text-gray-500 transition duration-200 hover:cursor-pointer hover:text-blue-600 hover:scale-110"
+            />
             <img
               src={logo}
               alt="Logo"
-              className="h-10 w-10 transition-transform duration-300 hover:scale-105 hover:brightness-90 cursor-pointer"
+              className="h-10 w-10 transition-transform duration-300 hover:scale-105 hover:brightness-90 cursor-pointer rounded-lg"
             />
             <div>
-              <h6 className="text-gray-800 font-semibold text-base leading-tight">
-                Explore AI-Powered Generation
+              <h6 className="text-gray-800 font-semibold text-sm leading-tight">
+                AI-Powered Document Generation
               </h6>
-              <span className="text-xs text-gray-500 block">Best for Custom Document generation</span>
+              <span className="text-xs text-gray-400 block mt-0.5">Custom docs in seconds</span>
             </div>
           </div>
-          <hr className="border-gray-500 border-[1.5px]" />
-          {/* Sidebar as select */}
+
           <select
             value={selectedOption}
             onChange={(e) => setSelectedOption(e.target.value)}
-            className="px-4 py-2 rounded-lg border bg-white shadow ai-options-mobile"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white shadow-sm text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300 ai-options-mobile"
           >
             <option disabled value="">
-              Select a document option
+              Select a document type...
             </option>
             {sidebarOptions.map((item, idx) => (
               <option key={idx} value={item.text}>
@@ -228,218 +242,257 @@ const AIDocument = () => {
               </option>
             ))}
           </select>
-    
-          {/* Center: Document Preview */}
-          <div className="bg-white rounded-xl shadow-md p-4 ai-document-container">
-            <h5 className="text-xl font-bold mb-2">Your Document</h5>
-            {documentContent && (
-                <div className="flex gap-x-2 mb-2">
+
+          {/* Document Preview */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 ai-document-container">
+            <div className="flex items-center justify-between mb-3">
+              <h5 className="text-base font-semibold text-gray-800">Your Document</h5>
+              {documentContent && (
+                <div className="flex gap-x-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="bg-green-600 text-white text-sm px-2 py-2 rounded-lg shadow hover:bg-green-700"
+                    className="bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg shadow-sm hover:bg-emerald-600 transition font-medium"
                   >
-                    Download PDF
+                    PDF
                   </button>
                   <button
                     onClick={handleDownloadWord}
-                    className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg shadow hover:bg-blue-700"
+                    className="bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-600 transition font-medium"
                   >
-                    Download Word
+                    Word
                   </button>
                 </div>
               )}
+            </div>
             {loading && (
-              <div className="animate-pulse bg-gray-300 px-4 py-2 rounded-2xl text-sm mb-4 w-fit">
-                Generating...
+              <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2.5 rounded-xl text-sm mb-4 w-fit animate-pulse">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Generating your document...
               </div>
             )}
             {documentContent ? (
               <HtmlPreviewer htmlContent={documentContent} previewRef={previewRef} />
             ) : (
-              <p className="text-sm text-gray-500">No content to display.</p>
+              <p className="text-sm text-gray-400 text-center py-8">No content to display yet.</p>
             )}
           </div>
-    
-          {/* Bottom: Chat Input */}
-          <div className="bg-white rounded-xl shadow-md p-4 ai-document-chatsection">
+
+          {/* Chat Input */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 ai-document-chatsection">
             <div className="flex flex-col gap-2">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={!selectedOption}
-                className={`w-full px-4 py-2 text-sm border rounded-lg resize-none ${
-                  !selectedOption ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-300'
+                className={`w-full px-4 py-3 text-sm border rounded-xl resize-none transition ${
+                  !selectedOption
+                    ? 'bg-gray-50 cursor-not-allowed text-gray-400 border-gray-200'
+                    : 'border-gray-200 focus:ring-2 focus:ring-blue-300 focus:outline-none'
                 }`}
                 placeholder={
                   !selectedOption
-                    ? 'Select a document option first...'
-                    : 'Type your message...'
+                    ? 'Select a document type first...'
+                    : 'Describe what you need...'
                 }
                 rows="4"
               />
               <button
                 onClick={handleSend}
                 disabled={!selectedOption}
-                className={`w-full px-4 py-2 text-sm !rounded-lg ${
-                  selectedOption ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 text-gray-600'
+                className={`w-full px-4 py-2.5 text-sm font-medium !rounded-xl transition flex items-center justify-center gap-2 ${
+                  selectedOption
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                <PaperAirplaneIcon className="h-5 w-5 inline-block mr-2" />
-                Send
+                <PaperAirplaneIcon className="h-4 w-4" />
+                Generate
               </button>
             </div>
           </div>
         </div>
-    
-        {/* Medium and Larger Screens: Original Layout */}
+
+        {/* Medium and Larger Screens */}
         <div className="hidden md:flex justify-start items-start gap-3 h-full">
-          
+
           {/* Sidebar */}
-          <div className={`ai-options transition-all duration-300 ${collapsed ? 'w-[80px]' : 'w-[30%]'} h-full bg-white shadow-lg rounded-xl px-3 py-4 flex flex-col justify-between overflow-y-auto`}>
+          <div className={`ai-options transition-all duration-300 ${collapsed ? 'w-[72px]' : 'w-[28%]'} h-full bg-white shadow-sm border border-gray-100 rounded-2xl px-3 py-4 flex flex-col justify-between overflow-y-auto`}>
             <div>
-              <div className={`flex items-center justify-between ${collapsed ? 'mb-4' : ''}`}>
-                <ArrowLeftIcon onClick={() => window.history.back()} title="go back" height={20} width={20} className="transition duration-200 hover:cursor-pointer hover:scale-104" />
+              <div className="flex items-center justify-between mb-3">
+                <ArrowLeftIcon
+                  onClick={() => window.history.back()}
+                  title="go back"
+                  height={18}
+                  width={18}
+                  className="text-gray-400 transition duration-200 hover:cursor-pointer hover:text-blue-600 hover:scale-110"
+                />
                 <img
                   src={logo}
                   alt="Logo"
-                  className="h-10 w-auto transition-transform duration-300 hover:scale-105 hover:brightness-90 cursor-pointer"
+                  className="h-9 w-auto transition-transform duration-300 hover:scale-105 cursor-pointer rounded-lg"
                   onClick={() => setCollapsed(!collapsed)}
                 />
-                {!collapsed ? (
-                  <button onClick={() => setCollapsed(true)} className="text-gray-500 hover:text-gray-800 text-xl">
-                    ❮
-                  </button>
-                ) : (
-                  <button onClick={() => setCollapsed(false)} className="text-gray-500 hover:text-gray-800 text-xl">
-                    ❯
-                  </button>
-                )}
+                <button
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="text-gray-400 hover:text-gray-700 text-sm font-bold transition"
+                >
+                  {collapsed ? '❯' : '❮'}
+                </button>
               </div>
-    
+
               {!collapsed && (
                 <>
-                  <h6 className="text-gray-800 font-semibold text-base leading-tight mb-1">
-                    Explore AI-Powered Generation
+                  <h6 className="text-gray-800 font-semibold text-sm leading-tight mb-0.5">
+                    AI Document Generator
                   </h6>
-                  <span className="text-xs text-gray-500 block mb-2">Best for Custom Document generation</span>
-                  <hr className="border-black border-[1.5px] my-2" />
+                  <span className="text-xs text-gray-400 block mb-3">Powered by Google Gemini</span>
+                  <hr className="border-gray-100 mb-3" />
                 </>
               )}
-    
-              <div className="flex flex-col gap-y-2">
+
+              <div className="flex flex-col gap-y-1.5">
                 {sidebarOptions.map((item, index) => (
                   <button
                     key={index}
                     onClick={() => setSelectedOption(item.text)}
-                    className={`flex gap-x-2 border px-3 py-2 w-full text-sm text-gray-800 text-left !rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all ${
-                      selectedOption === item.text ? 'bg-blue-500' : ''
+                    title={collapsed ? item.text : undefined}
+                    className={`flex items-center gap-x-2.5 border px-3 py-2.5 w-full text-sm text-gray-700 text-left !rounded-xl transition-all duration-150 ${
+                      selectedOption === item.text
+                        ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium shadow-sm'
+                        : 'border-transparent hover:bg-gray-50 hover:border-gray-200'
                     }`}
                   >
-                    {/* Icon on the left */}
-                    <div className="w-6 flex items-center justify-center">
+                    <div className="w-5 flex-shrink-0 flex items-center justify-center">
                       {item.icon}
                     </div>
-
-                    {/* Centered text (only when sidebar is expanded) */}
                     {!collapsed && (
-                      <div className="flex-">
-                        {item.text}
-                      </div>
+                      <span className="truncate">{item.text}</span>
                     )}
                   </button>
                 ))}
               </div>
             </div>
-    
+
             {!collapsed && (
-              <div className="text-xs text-gray-400 text-center pt-4">
-                Powered by Google Gemini | Built for Efficiency
+              <div className="text-xs text-gray-300 text-center pt-4 border-t border-gray-50 mt-4">
+                Built for Efficiency
               </div>
             )}
           </div>
-    
+
           {/* Document Preview */}
-          <div className="w-[80%] h-full bg-white rounded-xl shadow-md flex flex-col p-4 overflow-auto ai-document-container">
+          <div className="w-[80%] h-full bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col p-5 overflow-auto ai-document-container">
             <div className="flex justify-between items-center mb-4">
-              <h6 className="text-xl font-bold">Your generated document will appear here</h6>
+              <div>
+                <h6 className="text-base font-semibold text-gray-800">
+                  {documentContent ? 'Generated Document' : 'Your document will appear here'}
+                </h6>
+                {selectedOption && !documentContent && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Ready to generate: <span className="text-blue-500 font-medium">{selectedOption}</span>
+                  </p>
+                )}
+              </div>
               {documentContent && (
                 <div className="flex gap-x-2">
                   <button
                     onClick={handleDownloadPDF}
-                    className="bg-green-600 text-white text-sm px-4 py-2 rounded-lg shadow hover:bg-green-700"
+                    className="bg-emerald-500 text-white text-xs px-4 py-2 rounded-lg shadow-sm hover:bg-emerald-600 transition font-medium"
                   >
                     Download PDF
                   </button>
                   <button
                     onClick={handleDownloadWord}
-                    className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg shadow hover:bg-blue-700"
+                    className="bg-blue-500 text-white text-xs px-4 py-2 rounded-lg shadow-sm hover:bg-blue-600 transition font-medium"
                   >
                     Download Word
                   </button>
                 </div>
               )}
             </div>
-    
+
             {loading && (
-              <div className="max-w-[80%] px-4 py-2 rounded-2xl text-sm bg-gray-300 text-gray-800 self-start mr-auto animate-pulse mb-4">
-                Generating...
+              <div className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2.5 rounded-xl text-sm w-fit mb-4 animate-pulse">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Generating your document...
               </div>
             )}
-    
-            <div className="overflow-y-auto">
+
+            <div className="overflow-y-auto flex-1">
               {documentContent ? (
                 <HtmlPreviewer htmlContent={documentContent} previewRef={previewRef} />
               ) : (
-                <div className="flex justify-center items-center p-8 ">
-                  <Lottie animationData={aidocumentanimation} className="m-8 h-30 w-autotie" />
+                <div className="flex flex-col justify-center items-center h-full text-center p-8">
+                  <Lottie animationData={aidocumentanimation} className="h-48 w-auto mb-4 opacity-80" />
+                  <p className="text-sm text-gray-400">Select a document type and describe your needs</p>
                 </div>
               )}
             </div>
           </div>
+
           {/* Chatbox */}
-          <div className="w-[25%] h-full bg-white rounded-xl shadow-xl flex flex-col relative ai-document-chatsection">
-            <div className="flex-1 overflow-y-auto p-4 relative">
+          <div className="w-[25%] h-full bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col ai-document-chatsection">
+            <div className="px-4 py-3 border-b border-gray-50">
+              <h6 className="text-sm font-semibold text-gray-700">Chat</h6>
+              <p className="text-xs text-gray-400">Describe your document needs</p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-center gap-2">
+                  <PaperAirplaneIcon className="h-8 w-8 text-gray-200" />
+                  <p className="text-xs text-gray-300">Your conversation will appear here</p>
+                </div>
+              )}
               {messages.map((msg, idx) => (
                 <div
-                key={idx}
-                className={`max-w-[90%] px-4 py-2 rounded-2xl text-sm break-words whitespace-pre-wrap overflow-hidden
-                  ${
-                    msg.sender === 'user'
-                      ? 'bg-blue-600 text-white self-end ml-auto mb-4'
-                      : 'bg-gray-200 text-black self-start mr-auto bot-msg'
-                  }`}
-              >
-                {msg.text}
-              </div>              
+                  key={idx}
+                  className={`max-w-[88%] px-3.5 py-2.5 rounded-2xl text-xs break-words whitespace-pre-wrap leading-relaxed shadow-sm
+                    ${
+                      msg.sender === 'user'
+                        ? 'bg-blue-600 text-white self-end ml-auto rounded-br-sm'
+                        : 'bg-gray-100 text-gray-700 self-start mr-auto rounded-bl-sm bot-msg'
+                    }`}
+                >
+                  {msg.text}
+                </div>
               ))}
             </div>
 
             {/* Chat Input */}
-            <div className="flex items-center border-t p-2 gap-2 ai-document-chatinput">
+            <div className="border-t border-gray-100 p-3 flex items-end gap-2 ai-document-chatinput">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={!selectedOption}
-                className={`flex-1 px-6 py-3 text-sm border rounded-lg focus:outline-none resize-none ${
-                  !selectedOption ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-300'
+                className={`flex-1 px-3.5 py-2.5 text-sm border rounded-xl focus:outline-none resize-none transition ${
+                  !selectedOption
+                    ? 'bg-gray-50 cursor-not-allowed text-gray-400 border-gray-100'
+                    : 'border-gray-200 focus:ring-2 focus:ring-blue-200'
                 }`}
                 placeholder={
                   !selectedOption
-                    ? 'Select a document option from the sidebar first...'
-                    : `Explain about the features of the ${selectedOption}`
+                    ? 'Select a document type first...'
+                    : `Describe your ${selectedOption.toLowerCase()}...`
                 }
-                rows="10"
+                rows="6"
               />
               <button
                 onClick={handleSend}
                 disabled={!selectedOption}
-                className={`flex items-center justify-center px-6 py-3 text-sm !rounded-lg transition ${
+                className={`flex items-center justify-center p-2.5 !rounded-xl transition flex-shrink-0 ${
                   selectedOption
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                    : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                 }`}
               >
-                <PaperAirplaneIcon className="h-5 w-5" />
+                <PaperAirplaneIcon className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -447,7 +500,6 @@ const AIDocument = () => {
         </div>
       </div>
     );
-    
 };
 
 export default AIDocument;
